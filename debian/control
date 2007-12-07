@@ -1,0 +1,20 @@
+Source: libgtk2-ex-clock-perl
+Section: perl
+Priority: optional
+Build-Depends: cdbs, debhelper (>= 4)
+Maintainer: Kevin Ryde <user42@zip.com.au>
+Standards-Version: 3.7.3
+Homepage: http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
+
+Package: libgtk2-ex-clock-perl
+Architecture: all
+Depends: libgtk2-perl, libtime-hires-perl
+Suggests: libdatetime-timezone-perl, libdatetime-perl
+Description: Simple clock widget for Gtk2-Perl
+ Gtk2::Ex::Clock is a simple widget displaying a time like "23:59".
+ The format can be given with "strftime" format string and a timezone
+ can be specified with a TZ environment setting or a
+ DateTime::TimeZone object.
+ .
+ The widget is meant to be light weight and suitable for somewhere
+ unobtrusive in a real-time or semi-realtime application.

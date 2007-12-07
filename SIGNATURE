@@ -1,0 +1,40 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.55.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
+SHA1 b7a456ad5bf1702e380f0d0de9aba78154e9314d MANIFEST
+SHA1 390517263209a0ece6c9e601de2beca934f97b0d META.yml
+SHA1 971ec95ab46b1e35ea7c008c3de4a42b4accd2cf Makefile.PL
+SHA1 296e78aea1912482d12800417deb23a4d3c9b6f9 README
+SHA1 23a79dc382fd9768a56b5facf65fb37e8973e867 debian/changelog
+SHA1 1b6453892473a467d07372d45eb05abc2031647a debian/compat
+SHA1 a147665b0d50dabd9c45f239f1c7a5f5a58fc333 debian/control
+SHA1 4a84b7ac966077d2e2ac1a7e8a1a9e728c88b896 debian/copyright
+SHA1 010a6d657230064aef0bf50ae1f01b093fface69 debian/rules
+SHA1 d0cf1be218d1a48bfc1100eafc95452752abe435 debian/watch
+SHA1 30aa01296024562fd3f865fd2f431ef9007a82e2 examples/datetime.pl
+SHA1 466268be45e5a915d2daa461831db7bc674681a8 examples/simple.pl
+SHA1 f6a63ca6ce45c88183606a0acc0f63a87ac4624f examples/twoline.pl
+SHA1 001e5dc996f7b8e17c49b8a2c0cd7187b86100d8 examples/world.pl
+SHA1 03066b544446899b4f058735a842208ddbd7cde6 lib/Gtk2/Ex/Clock.pm
+SHA1 de555c4983a865bb08b5202a440fb19c2c309c28 t/Clock.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHWc5/LFMCIV9q3ToRApnWAJ9ea6VvIF60vakM45IzFTXzmPqwZQCfRibN
+D251ogU+tl9rkMAfHLjANrA=
+=2ZsG
+-----END PGP SIGNATURE-----
