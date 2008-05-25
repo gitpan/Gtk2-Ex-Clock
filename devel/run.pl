@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2008 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -17,26 +17,42 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
-
-# Clock display using DateTime::TimeZone.
-
-
 use strict;
 use warnings;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
+use POSIX qw(setlocale LC_ALL LC_TIME);
+use DateTime;
 use DateTime::TimeZone;
+
+{
+  $ENV{'LANG'} = 'ja_JP';
+  setlocale(LC_ALL, '') or die;
+}
+
+{
+  my $locale = setlocale (LC_TIME);
+  DateTime->DefaultLocale ($locale);
+  print "DateTime::DefaultLocale is ", DateTime->DefaultLocale, "\n";
+}
 
 my $toplevel = Gtk2::Window->new('toplevel');
 $toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
 
-# when using DateTime::TimeZone the format is passed to DateTime->strftime,
-# so its extra %{method} format style is available.
-#
-my $timezone = DateTime::TimeZone->new(name => 'Australia/Perth');
-my $clock = Gtk2::Ex::Clock->new (format => '%{day_name} %H:%M',
-                                  timezone=> $timezone);
-$toplevel->add ($clock);
+my $vbox = Gtk2::VBox->new;
+$toplevel->add ($vbox);
+
+{
+  my $clock = Gtk2::Ex::Clock->new (format => "\x{263A} %a %I:%M%P",
+                                    timezone => 'GMT');
+  $vbox->pack_start ($clock, 1,1,0);
+}
+{
+  my $tz = DateTime::TimeZone->new (name => 'GMT');
+  my $clock = Gtk2::Ex::Clock->new (format => "\x{263A} %a %I:%M%P",
+                                    timezone => $tz);
+  $vbox->pack_start ($clock, 1,1,0);
+}
 
 $toplevel->show_all;
 Gtk2->main;

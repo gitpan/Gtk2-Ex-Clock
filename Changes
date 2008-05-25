@@ -16,16 +16,6 @@ You should have received a copy of the GNU General Public License along
 with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-
-Gtk2::Ex::Clock is a simple digital clock widget displaying an
-strftime formatted time or date/time.  The default is 24-hour %H:%M
-local time, and properties allow other formats and/or a different
-timezone.  Pango markup can be used for font effects like bold or
-italics in the display.
-
-The only prerequisite is Gtk2-Perl.  The clock home page is
-
-    http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
-
-Bug reports to the author at user42@zip.com.au please.
+Version 1 - the first version
+Version 2 - tweaks
+Version 3 - cope with locale charset from POSIX::strftime()

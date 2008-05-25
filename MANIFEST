@@ -1,3 +1,4 @@
+Changes
 COPYING
 debian/changelog
 debian/compat
@@ -5,6 +6,8 @@ debian/control
 debian/copyright
 debian/rules
 debian/watch
+devel/run.pl
+examples/builder.pl
 examples/datetime.pl
 examples/simple.pl
 examples/twoline.pl
@@ -15,4 +18,5 @@ MANIFEST			This list of files
 README
 SIGNATURE
 t/Clock.t
+t/pod.t
 META.yml                                 Module meta-data (added by MakeMaker)

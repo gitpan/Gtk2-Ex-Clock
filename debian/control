@@ -5,6 +5,7 @@ Build-Depends: cdbs, debhelper (>= 4)
 Maintainer: Kevin Ryde <user42@zip.com.au>
 Standards-Version: 3.7.3
 Homepage: http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
+Bugs: mailto:user42@zip.com.au
 
 Package: libgtk2-ex-clock-perl
 Architecture: all
