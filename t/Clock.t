@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 # Copyright 2007, 2008 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
@@ -16,10 +18,11 @@
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
+use strict;
+use warnings;
 use Test::More tests => 22;
 use Gtk2;
 use Gtk2::Ex::Clock;
-use Scalar::Util;
 
 
 ok ($Gtk2::Ex::Clock::VERSION >= 3);
@@ -69,6 +72,7 @@ SKIP: {
   # no circular reference between the clock and the timer callback it installs
   {
     my $clock = Gtk2::Ex::Clock->new;
+    require Scalar::Util;
     Scalar::Util::weaken ($clock);
     is (defined $clock ? 'defined' : 'not defined',
         'not defined',

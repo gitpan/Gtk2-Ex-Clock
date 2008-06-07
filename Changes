@@ -19,3 +19,4 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 Version 1 - the first version
 Version 2 - tweaks
 Version 3 - cope with locale charset from POSIX::strftime()
+Version 4 - fix for _SC_CLK_TCK on perl 5.8.8

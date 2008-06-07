@@ -23,7 +23,7 @@ use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 3;
+our $VERSION = 4;
 
 use constant {
   DEFAULT_FORMAT => '%H:%M',
@@ -67,7 +67,7 @@ use Glib::Object::Subclass
 # traditional 100 ticks/second, ie. a resolution of 10 milliseconds (giving
 # a 20 ms margin).
 #
-my $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK);
+my $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK());
 if ($timer_margin == -1) { $timer_margin = 100; } # default assume 100 Hz
 $timer_margin = 2 * 1000.0 / $timer_margin;
 if (DEBUG) { print "timer margin $timer_margin milliseconds\n"; }

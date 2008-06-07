@@ -43,6 +43,9 @@ WriteMakefile
    clean        => { FILES => "Clock.html" },
   );
 
+
+
+
 sub MY::postamble {
   return <<'MAKE_FRAG';
 
@@ -53,9 +56,9 @@ Clock.html: lib/Gtk2/Ex/Clock.pm Makefile
 	  >Clock.html
 
 lint:
-	perl -MO=Lint lib/Gtk2/Ex/Clock.pm
+	perl -MO=Lint lib/Gtk2/Ex/Clock.pm t/*.t
 	podchecker lib/Gtk2/Ex/Clock.pm
-	perlcritic -1 lib/Gtk2/Ex/Clock.pm
+	perlcritic --nocolor -1 lib/Gtk2/Ex/Clock.pm t/*.t
 
 myman:
 	mv MANIFEST MANIFEST.old
@@ -91,6 +94,7 @@ debug-constants-check:
 	if egrep -n 'DEBUG => [^0]' $(TO_INST_PM); then exit 1; else exit 0; fi
 
 diff-prev:
+	make $(DISTNAME)-$(VERSION).tar.gz
 	rm -rf diff.tmp
 	mkdir diff.tmp
 	cd diff.tmp \
