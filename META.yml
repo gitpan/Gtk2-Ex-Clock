@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Gtk2-Ex-Clock
-version:             4
+version:             5
 abstract:            Simple digital clock widget.
 license:             gpl
 author:              

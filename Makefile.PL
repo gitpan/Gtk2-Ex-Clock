@@ -38,7 +38,7 @@ WriteMakefile
 
                     # actually Gtk2-Perl requires perl 5.8, which has
                     # Scalar::Util builtin already
-                    'Scalar::Util' => 0, # builtin in recent perl
+                    'Scalar::Util' => 0,
                    },
    clean        => { FILES => "Clock.html" },
   );
@@ -55,10 +55,12 @@ Clock.html: lib/Gtk2/Ex/Clock.pm Makefile
 	| sed 's!http://search.cpan.org/perldoc?Gtk2%3A%3A\([^"%]*\)"!http://gtk2-perl.sourceforge.net/doc/pod/Gtk2/\1.html"!' \
 	  >Clock.html
 
+CHECKFILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
 lint:
-	perl -MO=Lint lib/Gtk2/Ex/Clock.pm t/*.t
-	podchecker lib/Gtk2/Ex/Clock.pm
-	perlcritic --nocolor -1 lib/Gtk2/Ex/Clock.pm t/*.t
+	for i in $(CHECKFILES); do perl -MO=Lint $$i; done
+	podchecker    $(CHECKFILES)
+pc:
+	perlcritic $(CHECKFILES)
 
 myman:
 	mv MANIFEST MANIFEST.old

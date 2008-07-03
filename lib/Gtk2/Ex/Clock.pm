@@ -23,7 +23,7 @@ use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 4;
+our $VERSION = 5;
 
 use constant {
   DEFAULT_FORMAT => '%H:%M',
@@ -84,36 +84,13 @@ sub strftime_is_seconds {
   # %T is "%H:%M:%S"
   # %X is locale preferred time, probably "%H:%M:%S"
   # modifiers standard E and O, plus GNU "-_0^"
-  return ($format =~ /%[-_^0-9EO]*[crsSTX]/);
-}
-
-# $tz is a string setting for the TZ environment variable, or undef.
-# $subr is a code reference.
-# Call $subr with TZ set to $tz, or if $tz is the empty string or undef
-# then just call $subr with no change to TZ.  There's no return value.
-#
-sub call_with_TZ {
-  my ($tz, $subr) = @_;
-  my $old_tz = $ENV{'TZ'};
-
-  # if timezone undef or empty, or if it's the same as the current zone,
-  # then avoid munging %ENV and the slowness of tzset()
-  if (! defined $tz
-      || $tz eq ''
-      || (defined $old_tz && $tz eq $old_tz)) {
-    &$subr();
-
-  } else {
-    $ENV{'TZ'} = $tz;
-    POSIX::tzset();
-    &$subr();
-    if (defined $old_tz) {
-      $ENV{'TZ'} = $old_tz;
-    } else {
-      delete $ENV{'TZ'};
-    }
-    POSIX::tzset();
-  }
+  #
+  # DateTime extras:
+  # %N is nanoseconds, which really can't work, so ignore
+  #
+  return ($format =~ /%[-_^0-9EO]*
+                       ([crsSTX]
+                       |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
 }
 
 sub _timer_callback {
@@ -126,8 +103,8 @@ sub _timer_callback {
   if (DEBUG) { print "$self run timer ", $self->{'timer_id'}||'undef', "\n"; }
 
   my $tod = Time::HiRes::gettimeofday();
-  my $format   = $self->get('format');
-  my $timezone = $self->get('timezone');
+  my $format   = $self->{'format'};
+  my $timezone = $self->{'timezone'};
   my $str;
 
   if (ref($timezone) && $timezone->isa('DateTime::TimeZone')) {
@@ -137,22 +114,29 @@ sub _timer_callback {
 
   } else {
     # Glib also has g_date_strftime which is utf8 and so avoids this charset
-    # nonsense, but it operates only on the date, not the time, which is
+    # nonsense, but it operates only on the date, not the time, making it
     # pretty useless for a clock.
     #
     require Encode;
     require I18N::Langinfo;
     my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
     $format = Encode::encode ($charset, $format);
-    call_with_TZ ($timezone,
-      sub { my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)
-              = localtime ($tod);
-            $str = POSIX::strftime
-              ($format,$sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst);
-          });
+
+    # If $timezone is non-empty set $ENV{'TZ'} for a temporary putenv() to
+    # change the zone.  Fairly sure Perl will take care of calling tzset()
+    # per its LOCALTIME_R_NEEDS_TZSET config test (see the "Config" pod) for
+    # old systems where you're supposed to do that to make a putenv TZ take
+    # effect.
+    #
+    if (defined $timezone && $timezone ne '') {
+      local $ENV{'TZ'} = $timezone;
+      $str = POSIX::strftime ($format, localtime ($tod));
+    } else {
+      $str = POSIX::strftime ($format, localtime ($tod));
+    }
     $str = Encode::decode ($charset, $str);
   }
-  $self->set (label => $str);
+  $self->set_label ($str);
 
   # Decide how long, in milliseconds, from $tod to the next multiple of
   # $self->{'decided_resolution'} seconds, ie. to either the next 1 second or
@@ -170,7 +154,7 @@ sub _timer_callback {
   if (DEBUG) {
     print "start timer ",$self->{'timer_id'},
       ", ${milliseconds}ms from $tod, to give ",
-      $tod + $milliseconds / 1000.0,"\n";
+        $tod + $milliseconds / 1000.0,"\n";
   }
   return 0;  # remove previous timer
 }
@@ -187,7 +171,7 @@ sub _decide_resolution_and_update {
   my ($self) = @_;
   $self->{'decided_resolution'}
     = $self->get('resolution')
-      || (strftime_is_seconds($self->get('format')) ? 1 : 60);
+      || (strftime_is_seconds($self->{'format'}) ? 1 : 60);
   if (DEBUG) {
     print "decided resolution ",$self->{'decided_resolution'},"\n";
   }
@@ -204,7 +188,8 @@ sub SET_PROPERTY {
 
 sub INIT_INSTANCE {
   my ($self) = @_;
-  $self->set('use-markup', 1);
+  $self->{'format'} = DEFAULT_FORMAT;
+  $self->set_use_markup (1);
   _decide_resolution_and_update ($self);
 }
 
@@ -225,7 +210,7 @@ Gtk2::Ex::Clock -- simple digital clock widget
 
  use Gtk2::Ex::Clock;
 
- my $clock = Gtk2::Ex::Clock->new ();
+ my $clock = Gtk2::Ex::Clock->new;
 
  # or a specified format, or a different timezone
  my $clock = Gtk2::Ex::Clock->new (format => '%I:%M<sup>%P</sup>',
@@ -264,8 +249,8 @@ timer waking once a minute to change a C<Gtk2::Label>.
 
 =item C<< Gtk2::Ex::Clock->new (key=>value,...) >>
 
-Create and return a new clock widget.  Optional key/value pairs can set
-initial properties as per C<< Glib::Object->new >>.  For example,
+Create and return a new clock widget.  Optional key/value pairs set initial
+properties as per C<< Glib::Object->new >>.  For example,
 
     my $clock = Gtk2::Ex::Clock->new (format => '%a %H:%M',
                                       timezone => 'Asia/Tokyo');
@@ -302,25 +287,26 @@ properties can be used to control centring.  For example,
 
 =item C<timezone> (string or C<DateTime::TimeZone>, default local time)
 
-The timezone to use in the display.  An empty string or undef (undef is the
-default) means local time.
+The timezone to use in the display.  An empty string or undef (the default)
+means local time.
 
 For a string, the C<TZ> environment variable (C<$ENV{'TZ'}>) is set to
 format the time (and restored so other parts of the program are not
 affected).  See the C<tzset> man page or the GNU C Library manual under "TZ
 Variable" for possible settings.
 
-For a C<DateTime::TimeZone> object the time display uses its information and
-a C<DateTime> object C<strftime> method.  That method may have some extra
-conversions in the format string over what the C library offers.
+For a C<DateTime::TimeZone> object its information and a C<DateTime> object
+C<strftime> method is used for the time display.  That method may have some
+extra conversions in the format string over what the C library offers.
 
 =item C<resolution> (integer, default from format)
 
 The resolution, in seconds, of the clock.  The default 0 means look at the
 format to decide whether seconds is needed or minutes is enough.  Formats
 using C<%S> and various other mostly-standard forms like C<%T> and C<%X> are
-recognised as seconds, and anything else is minutes.  If that comes out
-wrong you can force it by setting this property.
+recognised as seconds, as are C<DateTime> methods like C<%{iso8601}>.
+Anything else is minutes.  If that comes out wrong you can force it by
+setting this property.
 
 Incidentally, if you're only displaying hours then you probably don't want
 hour resolution, since a system time change won't be recognised until the
@@ -334,18 +320,18 @@ sources for some complete programs displaying clocks in various forms.
 
 =head1 LOCALE
 
-For a plain string C<timezone> the POSIX C<strftime> function gets localized
-day names etc from C<LC_TIME> in the usual way.  Generally Perl does a
-suitable C<setlocale(LC_TIME)> at startup so your environment settings take
-effect automatically.
+For a string C<timezone> property the POSIX C<strftime> function gets
+localized day names etc from C<LC_TIME> in the usual way.  Generally Perl
+does a suitable C<setlocale(LC_TIME)> at startup so your environment
+settings take effect automatically.
 
 For a C<DateTime::TimeZone> object the DateTime C<strftime> gets
 localizations from the C<< DateTime->DefaultLocale >> (see L<DateTime>).
-Generally you must call to set C<DefaultLocale> yourself at some point early
-in the program.
+Generally you must make a call to set C<DefaultLocale> yourself at some
+point early in the program.
 
 The C<format> string can include unicode in Perl's usual wide-char fashion.
-But for POSIX C<strftime> the format string is converted to the locale
+However for POSIX C<strftime> the format string is converted to the locale
 charset and then back to unicode, so you'll be limited to what's
 representable in the locale charset.
 
@@ -364,9 +350,9 @@ be slightly on the slow side.  The GNU C Library (as of version 2.7) for
 instance opens and re-reads a zoneinfo file on each change.  Doing that
 (twice) each minute is fine, but for seconds you may prefer
 C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread safe either,
-though rumour has it you have to be very careful with threads and Gtk2-Perl
-anyway, so you probably won't be using threads.  Again you can use a
-C<DateTime::TimeZone> object if you're nervous.
+though rumour has it you have to be extremely careful with threads and
+Gtk2-Perl anyway, so you probably won't be using threads.  Again you can use
+a C<DateTime::TimeZone> object if you're nervous.
 
 =head1 HOME PAGE
 

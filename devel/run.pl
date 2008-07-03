@@ -53,6 +53,16 @@ $toplevel->add ($vbox);
                                     timezone => $tz);
   $vbox->pack_start ($clock, 1,1,0);
 }
+{
+  my @methods = ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
+                 'epoch');
+  my $tz = DateTime::TimeZone->new (name => 'GMT');
+  foreach my $method (@methods) {
+    my $clock = Gtk2::Ex::Clock->new (format => "$method \%{$method}",
+                                      timezone => $tz);
+    $vbox->pack_start ($clock, 1,1,0);
+  }
+}
 
 $toplevel->show_all;
 Gtk2->main;
