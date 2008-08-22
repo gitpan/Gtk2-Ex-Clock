@@ -55,6 +55,11 @@ Clock.html: lib/Gtk2/Ex/Clock.pm Makefile
 	| sed 's!http://search.cpan.org/perldoc?Gtk2%3A%3A\([^"%]*\)"!http://gtk2-perl.sourceforge.net/doc/pod/Gtk2/\1.html"!' \
 	  >Clock.html
 
+myman:
+	mv MANIFEST MANIFEST.old
+	touch SIGNATURE
+	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
+
 CHECKFILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
 lint:
 	for i in $(CHECKFILES); do perl -MO=Lint $$i; done
@@ -62,14 +67,9 @@ lint:
 pc:
 	perlcritic $(CHECKFILES)
 
-myman:
-	mv MANIFEST MANIFEST.old
-	touch SIGNATURE
-	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
-
 # find files in the dist with mod times this year, but without this year in
 # the copyright line
-copyright-years-check: $(DISTVNAME).tar.gz
+copyright-years-check:
 	year=`date +%Y`; \
 	tar tvfz $(DISTVNAME).tar.gz \
 	| grep $$year- \
@@ -77,15 +77,16 @@ copyright-years-check: $(DISTVNAME).tar.gz
 	| (result=0; \
 	  while read i; do \
 	    case $$i in \
-	      '' | */ | COPYING | MANIFEST | META.yml | SIGNATURE \
+	      '' | */ \
+	      | debian/changelog | debian/compat | debian/control \
 	      | t/pod.t \
-	      | debian/changelog | debian/compat | debian/control) \
+	      | COPYING | MANIFEST* | SIGNATURE | META.yml) \
 	      continue ;; \
 	    esac; \
 	    if test -e "$(srcdir)/$$i"; then f="$(srcdir)/$$i"; \
 	    else f="$$i"; fi; \
 	    if ! grep -q "Copyright.*$$year" $$f; then \
-	      echo "$$i:1: this file"; \
+	      echo "$$i":"1: this file"; \
 	      grep Copyright $$f; \
 	      result=1; \
 	    fi; \
@@ -96,15 +97,15 @@ debug-constants-check:
 	if egrep -n 'DEBUG => [^0]' $(TO_INST_PM); then exit 1; else exit 0; fi
 
 diff-prev:
-	make $(DISTNAME)-$(VERSION).tar.gz
 	rm -rf diff.tmp
 	mkdir diff.tmp
 	cd diff.tmp \
-	  && tar xfz ../$(DISTNAME)-`expr $(VERSION) - 1`.tar.gz \
-	  && tar xfz ../$(DISTNAME)-$(VERSION).tar.gz
-	-cd diff.tmp; diff -ur $(DISTNAME)-`expr $(VERSION) - 1` \
-	                       $(DISTNAME)-$(VERSION) >tree.diff
+	&& tar xfz ../$(NAME)-`expr $(VERSION) - 1`.tar.gz \
+	&& tar xfz ../$(NAME)-$(VERSION).tar.gz
+	-cd diff.tmp; diff -ur $(NAME)-`expr $(VERSION) - 1` \
+	                       $(NAME)-$(VERSION) >tree.diff
 	-less diff.tmp/tree.diff
+	rm -rf diff.tmp
 
 MAKE_FRAG
 }

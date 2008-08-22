@@ -23,14 +23,14 @@ use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 5;
+our $VERSION = 6;
 
 use constant {
   DEFAULT_FORMAT => '%H:%M',
 
-  # not wrapped as of Gtk2 version 1.181
-  GDK_PRIORITY_REDRAW => (Glib::G_PRIORITY_HIGH_IDLE + 20),
-};
+    # not wrapped until Gtk2-Perl version 1.190
+    GDK_PRIORITY_REDRAW => (Glib::G_PRIORITY_HIGH_IDLE + 20),
+  };
 
 # set this to 1 for some diagnostic prints
 use constant DEBUG => 0;
@@ -56,21 +56,134 @@ use Glib::Object::Subclass
                   'The resolution of the clock, in seconds, or 0 to decide this from the format string.',
                   0, 3600, 0,
                   Glib::G_PARAM_READWRITE)
-                 ];
+                ];
 
 # $timer_margin is an extra period in milliseconds to add to the timer
-# period requested.  It's designed to ensure we don't wake up before the
-# target time boundary of 1 second or 1 minute if g_timeout_add ends up
-# rounding to a clock tick boundary.
+# period requested.  It's designed to ensure the timer doesn't fire before
+# the target time boundary of 1 second or 1 minute if g_timeout_add() (or
+# the select() within it) ends up rounding to a clock tick boundary.
 #
 # In the unlikely event there's no sysconf value for CLK_TCK, assume the
 # traditional 100 ticks/second, ie. a resolution of 10 milliseconds (giving
 # a 20 ms margin).
 #
-my $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK());
+my $timer_margin = -1;  # default -1 like the error return from sysconf()
+eval { $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
 if ($timer_margin == -1) { $timer_margin = 100; } # default assume 100 Hz
 $timer_margin = 2 * 1000.0 / $timer_margin;
 if (DEBUG) { print "timer margin $timer_margin milliseconds\n"; }
+
+
+sub INIT_INSTANCE {
+  my ($self) = @_;
+  $self->{'format'} = DEFAULT_FORMAT;
+  $self->set_use_markup (1);
+  _decide_resolution_and_update ($self);
+}
+
+sub FINALIZE_INSTANCE {
+  my ($self) = @_;
+  if (DEBUG) { print "$self destroy\n"; }
+  _stop_timer ($self);
+}
+
+sub SET_PROPERTY {
+  my ($self, $pspec, $newval) = @_;
+  $self->{$pspec->get_name} = $newval;  # per default GET_PROPERTY
+
+  _decide_resolution_and_update ($self);
+}
+
+sub _decide_resolution_and_update {
+  my ($self) = @_;
+  $self->{'decided_resolution'}
+    = $self->get('resolution')
+      || (strftime_is_seconds($self->{'format'}) ? 1 : 60);
+  if (DEBUG) {
+    print "decided resolution ",$self->{'decided_resolution'},"\n";
+  }
+  _stop_timer ($self);
+  _timer_callback (\$self);
+}
+
+sub _stop_timer {
+  my ($self) = @_;
+  if (my $id = delete $self->{'timer_id'}) {
+    if (DEBUG) { print "stop timer $id\n"; }
+    Glib::Source->remove ($id);
+  }
+}
+
+sub _timer_callback {
+  my ($weak_ref_self) = @_;
+  # probably FINALIZE_INSTANCE should run before zapped by weakening, but in
+  # any case if called after weakened then stop the timer
+  my $self = $$weak_ref_self || return 0; # stop
+  if (DEBUG) { print "$self run timer ", $self->{'timer_id'}||'undef', "\n"; }
+
+  my $tod = Time::HiRes::gettimeofday();
+  my $format   = $self->{'format'};
+  my $timezone = $self->{'timezone'};
+  my $str;
+
+  if (Scalar::Util::blessed($timezone)
+      && $timezone->isa('DateTime::TimeZone')) {
+    require DateTime;
+    my $t = DateTime->from_epoch (epoch => $tod,
+                                  time_zone => $timezone);
+    $str = $t->strftime ($format);
+
+  } else {
+    # POSIX::strftime() operates in locale bytes, convert to and from
+    require Encode;
+    require I18N::Langinfo;
+    my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
+    $format = Encode::encode ($charset, $format);
+
+    # if 'timezone' unset or happens to be the same as $ENV{'TZ'} anyway,
+    # then no need to change and tzset()
+    #
+    # Perl itself calls tzset() before localtime() according to a config
+    # test of whether the C library needs that to get a new TZ to take
+    # effect.  But perl 5.8.8 and earlier didn't have it on localtime_r() as
+    # used in a threaded perl build, and glibc 2.6 (or thereabouts) did in
+    # fact need it ... so explicit tzset() here, for now.
+    #
+    if (! defined $timezone
+        || $timezone eq ''
+        || (defined $ENV{'TZ'} && $timezone eq $ENV{'TZ'})) {
+      $str = POSIX::strftime ($format, localtime ($tod));
+    } else {
+      { local $ENV{'TZ'} = $timezone;
+        POSIX::tzset();
+        $str = POSIX::strftime ($format, localtime ($tod));
+      }
+      POSIX::tzset();
+    }
+    $str = Encode::decode ($charset, $str);
+  }
+  $self->set_label ($str);
+
+  # Decide how long, in milliseconds, from $tod to the next multiple of
+  # $self->{'decided_resolution'} seconds, either the next 1 second or
+  # 1 minute boundary.  Plus the $timer_margin described above.
+  #
+  my $resolution = $self->{'decided_resolution'};
+  my $milliseconds
+    = POSIX::ceil ($timer_margin + 1000 * ($resolution
+                                           - POSIX::fmod ($tod, $resolution)));
+  my $weak_self = $self;
+  Scalar::Util::weaken ($weak_self);
+  $self->{'timer_id'} = Glib::Timeout->add
+    ($milliseconds, \&_timer_callback, \$weak_self, GDK_PRIORITY_REDRAW);
+
+  if (DEBUG) {
+    print "start timer ",$self->{'timer_id'},
+      ", ${milliseconds}ms from $tod, to give ",
+        $tod + $milliseconds / 1000.0,"\n";
+  }
+  return 0;  # remove previous timer
+}
 
 # $format is an strftime() format string.  Return true if it has 1 second
 # resolution.
@@ -93,112 +206,6 @@ sub strftime_is_seconds {
                        |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
 }
 
-sub _timer_callback {
-  my ($weak_ref_self) = @_;
-  my $self = $$weak_ref_self;
-  if (! defined $self) {
-    if (DEBUG) { print "Gtk2::Ex::Clock timer after destroyed, stopping\n"; }
-    return 0; # stop timer
-  }
-  if (DEBUG) { print "$self run timer ", $self->{'timer_id'}||'undef', "\n"; }
-
-  my $tod = Time::HiRes::gettimeofday();
-  my $format   = $self->{'format'};
-  my $timezone = $self->{'timezone'};
-  my $str;
-
-  if (ref($timezone) && $timezone->isa('DateTime::TimeZone')) {
-    require DateTime;
-    my $t = DateTime->now (time_zone => $timezone);
-    $str = $t->strftime($format);
-
-  } else {
-    # Glib also has g_date_strftime which is utf8 and so avoids this charset
-    # nonsense, but it operates only on the date, not the time, making it
-    # pretty useless for a clock.
-    #
-    require Encode;
-    require I18N::Langinfo;
-    my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
-    $format = Encode::encode ($charset, $format);
-
-    # If $timezone is non-empty set $ENV{'TZ'} for a temporary putenv() to
-    # change the zone.  Fairly sure Perl will take care of calling tzset()
-    # per its LOCALTIME_R_NEEDS_TZSET config test (see the "Config" pod) for
-    # old systems where you're supposed to do that to make a putenv TZ take
-    # effect.
-    #
-    if (defined $timezone && $timezone ne '') {
-      local $ENV{'TZ'} = $timezone;
-      $str = POSIX::strftime ($format, localtime ($tod));
-    } else {
-      $str = POSIX::strftime ($format, localtime ($tod));
-    }
-    $str = Encode::decode ($charset, $str);
-  }
-  $self->set_label ($str);
-
-  # Decide how long, in milliseconds, from $tod to the next multiple of
-  # $self->{'decided_resolution'} seconds, ie. to either the next 1 second or
-  # 1 minute boundary.  Plus the $timer_margin described above.
-  #
-  my $resolution = $self->{'decided_resolution'};
-  my $milliseconds
-    = POSIX::ceil ($timer_margin + 1000 * ($resolution
-                                           - POSIX::fmod ($tod, $resolution)));
-  my $weak_self = $self;
-  Scalar::Util::weaken ($weak_self);
-  $self->{'timer_id'} = Glib::Timeout->add
-    ($milliseconds, \&_timer_callback, \$weak_self, GDK_PRIORITY_REDRAW);
-
-  if (DEBUG) {
-    print "start timer ",$self->{'timer_id'},
-      ", ${milliseconds}ms from $tod, to give ",
-        $tod + $milliseconds / 1000.0,"\n";
-  }
-  return 0;  # remove previous timer
-}
-
-sub _stop_timer {
-  my ($self) = @_;
-  if (my $id = delete $self->{'timer_id'}) {
-    if (DEBUG) { print "stop timer $id\n"; }
-    Glib::Source->remove ($id);
-  }
-}
-
-sub _decide_resolution_and_update {
-  my ($self) = @_;
-  $self->{'decided_resolution'}
-    = $self->get('resolution')
-      || (strftime_is_seconds($self->{'format'}) ? 1 : 60);
-  if (DEBUG) {
-    print "decided resolution ",$self->{'decided_resolution'},"\n";
-  }
-  _stop_timer ($self);
-  _timer_callback (\$self);
-}
-
-sub SET_PROPERTY {
-  my ($self, $pspec, $newval) = @_;
-  $self->{$pspec->get_name} = $newval;  # per default GET_PROPERTY
-
-  _decide_resolution_and_update ($self);
-}
-
-sub INIT_INSTANCE {
-  my ($self) = @_;
-  $self->{'format'} = DEFAULT_FORMAT;
-  $self->set_use_markup (1);
-  _decide_resolution_and_update ($self);
-}
-
-sub FINALIZE_INSTANCE {
-  my ($self) = @_;
-  if (DEBUG) { print "$self destroy\n"; }
-  _stop_timer ($self);
-}
-
 1;
 __END__
 
@@ -209,7 +216,6 @@ Gtk2::Ex::Clock -- simple digital clock widget
 =head1 SYNOPSIS
 
  use Gtk2::Ex::Clock;
-
  my $clock = Gtk2::Ex::Clock->new;
 
  # or a specified format, or a different timezone
@@ -247,7 +253,7 @@ timer waking once a minute to change a C<Gtk2::Label>.
 
 =over 4
 
-=item C<< Gtk2::Ex::Clock->new (key=>value,...) >>
+=item C<< $clock = Gtk2::Ex::Clock->new (key=>value,...) >>
 
 Create and return a new clock widget.  Optional key/value pairs set initial
 properties as per C<< Glib::Object->new >>.  For example,
@@ -268,7 +274,7 @@ man page or the GNU C Library manual for possible C<%> conversions.
 
 Date conversions can be included to show a day or date as well as the time.
 This is good for a remote timezone where you might not be sure if it's today
-or tomorrow there yet.
+or tomorrow yet.
 
     my $clock = Gtk2::Ex::Clock->new (format => 'London %d%m %H:%M',
                                       timezone => 'Europe/London');
@@ -279,7 +285,7 @@ Pango markup can be used for bold, etc.  For example "am/pm" as superscript.
 
 Newlines can be included for multi-line display, for instance date on one
 line and the time below it.  The various C<Gtk2::Label> and C<Gtk2::Misc>
-properties can be used to control centring.  For example,
+properties can control centring.  For example,
 
     my $clock = Gtk2::Ex::Clock->new (format  => "%d %b\n%H:%M",
                                       justify => 'center',
@@ -296,8 +302,8 @@ affected).  See the C<tzset> man page or the GNU C Library manual under "TZ
 Variable" for possible settings.
 
 For a C<DateTime::TimeZone> object its information and a C<DateTime> object
-C<strftime> method is used for the time display.  That method may have some
-extra conversions in the format string over what the C library offers.
+C<strftime> is used for the display.  That C<strftime> method may have extra
+conversions over what the C library offers.
 
 =item C<resolution> (integer, default from format)
 
@@ -314,13 +320,13 @@ requested resolution worth of real time has elapsed.
 
 =back
 
-The properties of C<Gtk2::Label> and C<Gtk2::Misc> can be used to variously
-control padding, alignment, etc.  See the F<examples> directory in the
-sources for some complete programs displaying clocks in various forms.
+The properties of C<Gtk2::Label> and C<Gtk2::Misc> will variously control
+padding, alignment, etc.  See the F<examples> directory in the sources for
+some complete programs displaying clocks in various forms.
 
 =head1 LOCALE
 
-For a string C<timezone> property the POSIX C<strftime> function gets
+For a string C<timezone> property the C<POSIX::strftime> function gets
 localized day names etc from C<LC_TIME> in the usual way.  Generally Perl
 does a suitable C<setlocale(LC_TIME)> at startup so your environment
 settings take effect automatically.
@@ -331,19 +337,19 @@ Generally you must make a call to set C<DefaultLocale> yourself at some
 point early in the program.
 
 The C<format> string can include unicode in Perl's usual wide-char fashion.
-However for POSIX C<strftime> the format string is converted to the locale
-charset and then back to unicode, so you'll be limited to what's
-representable in the locale charset.
+For C<POSIX::strftime> it's converted to the locale charset then back again,
+so you'll be limited to what's representable in the locale charset.  For
+C<DateTime::TimeZone> all characters can be used irrespective of the locale.
 
 =head1 IMPLEMENATION
 
 The clock is implemented by updating a C<Gtk2::Label> under a timer.  This
 is simple, and makes good use of the label widget's text drawing code, but
-it does mean that with a variable width font the size of the widget can
-change as the time changes.  For minutes display any resizes are hardly
-noticable, but for seconds it may be best to use a fixed-width font, or to
-C<set_size_request> for a fixed size (initial size plus a few pixels say),
-or even try a NoShrink (see L<Gtk2::Ex::NoShrink>).
+it does mean that in a variable-width font the size of the widget can change
+as the time changes.  For minutes display any resizes are hardly noticable,
+but for seconds it may be best to have a fixed-width font, or to
+C<set_size_request> a fixed size (initial size plus a few pixels say), or
+even try a NoShrink (see L<Gtk2::Ex::NoShrink>).
 
 The way C<TZ> is temporarily changed to implement a non-local timezone could
 be slightly on the slow side.  The GNU C Library (as of version 2.7) for
@@ -353,6 +359,11 @@ C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread safe either,
 though rumour has it you have to be extremely careful with threads and
 Gtk2-Perl anyway, so you probably won't be using threads.  Again you can use
 a C<DateTime::TimeZone> object if you're nervous.
+
+=head1 SEE ALSO
+
+C<strftime(3)>, C<tzset(3)>, L<Gtk2>, L<Gtk2::Label>, L<Gtk2::Misc>,
+L<DateTime::TimeZone>, L<DateTime>
 
 =head1 HOME PAGE
 
@@ -374,10 +385,5 @@ more details.
 
 You should have received a copy of the GNU General Public License along with
 Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
-
-=head1 SEE ALSO
-
-C<strftime(3)>, C<tzset(3)>, L<Gtk2>, L<Gtk2::Label>, L<Gtk2::Misc>,
-L<DateTime::TimeZone>, L<DateTime>
 
 =cut

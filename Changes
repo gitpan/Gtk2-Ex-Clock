@@ -16,9 +16,22 @@ You should have received a copy of the GNU General Public License along
 with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Version 1 - the first version
-Version 2 - tweaks
-Version 3 - cope with locale charset from POSIX::strftime()
-Version 4 - fix for _SC_CLK_TCK on perl 5.8.8
-Version 5 - recognise DateTime %{} formats with seconds resolution
-          - let Perl take care of tzset if it's needed on old systems
+
+Version 6, August 2008
+    - need explicit tzset for threaded perl 5.8.8 
+
+Version 5, July 2008
+    - recognise DateTime %{} formats with seconds resolution
+    - let perl take care of tzset if it's needed on old systems
+
+Version 4, June 2008
+    - fix for _SC_CLK_TCK on perl 5.8.8
+
+Version 3, May 2008
+    - cope with locale charset from POSIX::strftime()
+
+Version 2, December 2007
+    - tweaks
+
+Version 1, November 2007
+    - the first version

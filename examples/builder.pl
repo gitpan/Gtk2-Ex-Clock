@@ -18,6 +18,8 @@
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Usage: ./builder.pl
+#
 # This is an example of making a clock in a GUI with Gtk2::Builder.  The
 # class name is "Gtk2__Ex__Clock", as usual for Gtk2-Perl package name to
 # Gtk type name conversion.

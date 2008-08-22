@@ -28,7 +28,7 @@ use Gtk2::Ex::Clock;
 
 
 my $toplevel = Gtk2::Window->new('toplevel');
-$toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
+$toplevel->signal_connect (destroy => sub { Gtk2->main_quit });
 
 my $vbox = Gtk2::VBox->new();
 $toplevel->add ($vbox);
@@ -60,7 +60,7 @@ foreach my $zone ('Pacific/Honolulu',    # -10:00
   $zone =~ m{[^/]+$};
   my $name = $&;
   $name =~ s/_/ /;
-  my $format = "%a %I:%M %P   $name";
+  my $format = "%a %I:%M %P %Z    $name";
   $vbox->add (Gtk2::Ex::Clock->new(format   => $format,
                                    timezone => $zone,
                                    xalign   => 0.0));
