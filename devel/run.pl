@@ -27,6 +27,9 @@ use DateTime::TimeZone;
 
 {
   $ENV{'LANG'} = 'ja_JP';
+  $ENV{'LANG'} = 'en_IN.UTF8';
+  $ENV{'LANG'} = 'ja_JP.UTF8';
+  $ENV{'LANG'} = 'ar_IN';
   setlocale(LC_ALL, '') or die;
 }
 
@@ -43,19 +46,20 @@ my $vbox = Gtk2::VBox->new;
 $toplevel->add ($vbox);
 
 {
+  # wide chars crunched through strftime
   my $clock = Gtk2::Ex::Clock->new (format => "TZ GMT:  \x{263A} %a %I:%M%P",
                                     timezone => 'GMT');
   $vbox->pack_start ($clock, 1,1,0);
 }
 {
   my $tz = DateTime::TimeZone->new (name => 'GMT');
-  my $clock = Gtk2::Ex::Clock->new (format => "DT GMT:  \x{263A} %a %I:%M%P",
+  my $clock = Gtk2::Ex::Clock->new (format => "DateTime GMT:  \x{263A} %a %I:%M%P",
                                     timezone => $tz);
   $vbox->pack_start ($clock, 1,1,0);
 }
 {
   my $tz = DateTime::TimeZone->new (name => 'local');
-  my $clock = Gtk2::Ex::Clock->new (format => "DT Local:  \x{263A} %a %I:%M%P",
+  my $clock = Gtk2::Ex::Clock->new (format => "DateTime Local:  \x{263A} %a %I:%M%P",
                                     timezone => $tz);
   $vbox->pack_start ($clock, 1,1,0);
 }
@@ -64,7 +68,7 @@ $toplevel->add ($vbox);
                  'epoch');
   my $tz = DateTime::TimeZone->new (name => 'GMT');
   foreach my $method (@methods) {
-    my $clock = Gtk2::Ex::Clock->new (format => "DT::$method \%{$method}",
+    my $clock = Gtk2::Ex::Clock->new (format => "DateTime::$method \%{$method}",
                                       timezone => $tz);
     $vbox->pack_start ($clock, 1,1,0);
   }

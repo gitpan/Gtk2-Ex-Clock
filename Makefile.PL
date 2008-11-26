@@ -30,8 +30,15 @@ WriteMakefile
    SIGN         => 1,
 
    PREREQ_PM    => {
-                    # any version should be ok
-                    'Gtk2' => 0,
+                    # Gtk2 version 1.200 for GDK_PRIORITY_REDRAW
+                    # (demanding the newest for just one constant is pretty
+                    # gratuitous, but you'll almost certainly want 1.200 for
+                    # various bug fixes too)
+                    'Gtk2' => '1.200',
+
+                    # actually this is only for the string timezone case,
+                    # but it's small enough to grab always
+                    'Tie::TZ' => 0,
 
                     # builtin in recent perl anyway
                     'Time::HiRes' => 0,
@@ -41,6 +48,14 @@ WriteMakefile
                     'Scalar::Util' => 0,
                    },
    clean        => { FILES => "Clock.html" },
+
+   EXTRA_META => <<'HERE',
+no_index:
+    directory:
+        - devel
+resources:
+    homepage: http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
+HERE
   );
 
 

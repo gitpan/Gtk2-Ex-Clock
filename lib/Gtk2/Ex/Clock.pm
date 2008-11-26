@@ -18,19 +18,14 @@
 package Gtk2::Ex::Clock;
 use strict;
 use warnings;
-use Gtk2;
+use Gtk2 '1.200'; # version 1.200 for GDK_PRIORITY_REDRAW
 use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 6;
+our $VERSION = 7;
 
-use constant {
-  DEFAULT_FORMAT => '%H:%M',
-
-    # not wrapped until Gtk2-Perl version 1.190
-    GDK_PRIORITY_REDRAW => (Glib::G_PRIORITY_HIGH_IDLE + 20),
-  };
+use constant DEFAULT_FORMAT => '%H:%M';
 
 # set this to 1 for some diagnostic prints
 use constant DEBUG => 0;
@@ -63,9 +58,9 @@ use Glib::Object::Subclass
 # the target time boundary of 1 second or 1 minute if g_timeout_add() (or
 # the select() within it) ends up rounding to a clock tick boundary.
 #
-# In the unlikely event there's no sysconf value for CLK_TCK, assume the
-# traditional 100 ticks/second, ie. a resolution of 10 milliseconds (giving
-# a 20 ms margin).
+# In the unlikely event there's no sysconf value for CLK_TCK, or no sysconf
+# func at all, assume the traditional 100 ticks/second, ie. a resolution of
+# 10 milliseconds (giving a 20 ms margin).
 #
 my $timer_margin = -1;  # default -1 like the error return from sysconf()
 eval { $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
@@ -129,38 +124,18 @@ sub _timer_callback {
   if (Scalar::Util::blessed($timezone)
       && $timezone->isa('DateTime::TimeZone')) {
     require DateTime;
-    my $t = DateTime->from_epoch (epoch => $tod,
-                                  time_zone => $timezone);
+    my $t = DateTime->from_epoch (epoch => $tod, time_zone => $timezone);
     $str = $t->strftime ($format);
 
-  } else {
-    # POSIX::strftime() operates in locale bytes, convert to and from
-    require Encode;
-    require I18N::Langinfo;
-    my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
-    $format = Encode::encode ($charset, $format);
+  } elsif (! defined $timezone || $timezone eq '') {
+    # in the current timezone
+    $str = strftime_wide ($format, localtime ($tod));
 
-    # if 'timezone' unset or happens to be the same as $ENV{'TZ'} anyway,
-    # then no need to change and tzset()
-    #
-    # Perl itself calls tzset() before localtime() according to a config
-    # test of whether the C library needs that to get a new TZ to take
-    # effect.  But perl 5.8.8 and earlier didn't have it on localtime_r() as
-    # used in a threaded perl build, and glibc 2.6 (or thereabouts) did in
-    # fact need it ... so explicit tzset() here, for now.
-    #
-    if (! defined $timezone
-        || $timezone eq ''
-        || (defined $ENV{'TZ'} && $timezone eq $ENV{'TZ'})) {
-      $str = POSIX::strftime ($format, localtime ($tod));
-    } else {
-      { local $ENV{'TZ'} = $timezone;
-        POSIX::tzset();
-        $str = POSIX::strftime ($format, localtime ($tod));
-      }
-      POSIX::tzset();
-    }
-    $str = Encode::decode ($charset, $str);
+  } else {
+    # in the given TZ timezone string
+    require Tie::TZ;
+    local $Tie::TZ::TZ = $timezone;
+    $str = strftime_wide ($format, localtime ($tod));
   }
   $self->set_label ($str);
 
@@ -175,7 +150,7 @@ sub _timer_callback {
   my $weak_self = $self;
   Scalar::Util::weaken ($weak_self);
   $self->{'timer_id'} = Glib::Timeout->add
-    ($milliseconds, \&_timer_callback, \$weak_self, GDK_PRIORITY_REDRAW);
+    ($milliseconds, \&_timer_callback, \$weak_self, Gtk2::GDK_PRIORITY_REDRAW);
 
   if (DEBUG) {
     print "start timer ",$self->{'timer_id'},
@@ -201,9 +176,28 @@ sub strftime_is_seconds {
   # DateTime extras:
   # %N is nanoseconds, which really can't work, so ignore
   #
+  $format =~ s/%%//g; # literal "%"s, so eg. "%%Something" is not "%S"
   return ($format =~ /%[-_^0-9EO]*
                        ([crsSTX]
                        |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
+}
+
+# strftime_wide() $format and the return are wide char strings, whereas
+# plain POSIX::strftime() takes and returns locale bytes.
+#
+# As noted in the pod below this is imperfect in that the encode/decode will
+# lose chars not representable in the locale charset.  g_date_strftime() is
+# unicode and could suit, but it's just dates, not times, so no good.  Does
+# someone have a wstrftime() kicking around?
+#
+sub strftime_wide {
+  my ($format, @args) = @_;
+  require I18N::Langinfo;
+  my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
+  require Encode;
+  $format = Encode::encode ($charset, $format);
+  my $str = POSIX::strftime ($format, @args);
+  return Encode::decode ($charset, $str);
 }
 
 1;
@@ -216,7 +210,7 @@ Gtk2::Ex::Clock -- simple digital clock widget
 =head1 SYNOPSIS
 
  use Gtk2::Ex::Clock;
- my $clock = Gtk2::Ex::Clock->new;
+ my $clock = Gtk2::Ex::Clock->new;  # local time
 
  # or a specified format, or a different timezone
  my $clock = Gtk2::Ex::Clock->new (format => '%I:%M<sup>%P</sup>',
@@ -302,7 +296,7 @@ affected).  See the C<tzset> man page or the GNU C Library manual under "TZ
 Variable" for possible settings.
 
 For a C<DateTime::TimeZone> object its information and a C<DateTime> object
-C<strftime> is used for the display.  That C<strftime> method may have extra
+C<strftime> is used for the display.  The C<strftime> method may have extra
 conversions over what the C library offers.
 
 =item C<resolution> (integer, default from format)
@@ -324,12 +318,12 @@ The properties of C<Gtk2::Label> and C<Gtk2::Misc> will variously control
 padding, alignment, etc.  See the F<examples> directory in the sources for
 some complete programs displaying clocks in various forms.
 
-=head1 LOCALE
+=head1 LOCALIZATIONS
 
 For a string C<timezone> property the C<POSIX::strftime> function gets
 localized day names etc from C<LC_TIME> in the usual way.  Generally Perl
-does a suitable C<setlocale(LC_TIME)> at startup so your environment
-settings take effect automatically.
+does a suitable C<setlocale(LC_TIME)> at startup so the usual settings take
+effect automatically.
 
 For a C<DateTime::TimeZone> object the DateTime C<strftime> gets
 localizations from the C<< DateTime->DefaultLocale >> (see L<DateTime>).
@@ -337,9 +331,10 @@ Generally you must make a call to set C<DefaultLocale> yourself at some
 point early in the program.
 
 The C<format> string can include unicode in Perl's usual wide-char fashion.
-For C<POSIX::strftime> it's converted to the locale charset then back again,
-so you'll be limited to what's representable in the locale charset.  For
-C<DateTime::TimeZone> all characters can be used irrespective of the locale.
+Currently for C<POSIX::strftime> it's converted to the locale charset then
+back again, so you'll be limited to what's representable in the locale
+charset.  For C<DateTime::TimeZone> all characters can be used irrespective
+of the locale.
 
 =head1 IMPLEMENATION
 

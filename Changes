@@ -17,6 +17,9 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+Version 7, November 2008
+    - use Tie::TZ, use Gtk2 1.200
+
 Version 6, August 2008
     - need explicit tzset for threaded perl 5.8.8 
 

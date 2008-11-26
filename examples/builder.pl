@@ -22,7 +22,8 @@
 #
 # This is an example of making a clock in a GUI with Gtk2::Builder.  The
 # class name is "Gtk2__Ex__Clock", as usual for Gtk2-Perl package name to
-# Gtk type name conversion.
+# Gtk type name conversion.  There's nothing builder-specific in the Clock,
+# it's all inherited from the usual builder widget handling.
 
 use strict;
 use warnings;

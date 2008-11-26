@@ -20,13 +20,14 @@
 
 use strict;
 use warnings;
-use Test::More tests => 23;
-use Gtk2;
 use Gtk2::Ex::Clock;
 
+use Gtk2;
+use Test::More tests => 24;
 
-ok ($Gtk2::Ex::Clock::VERSION >= 6);
-ok (Gtk2::Ex::Clock->VERSION  >= 6);
+
+ok ($Gtk2::Ex::Clock::VERSION >= 7);
+ok (Gtk2::Ex::Clock->VERSION  >= 7);
 
 ok (  Gtk2::Ex::Clock::strftime_is_seconds("%c"));
 ok (  Gtk2::Ex::Clock::strftime_is_seconds("x %r y"));
@@ -41,6 +42,7 @@ ok (  Gtk2::Ex::Clock::strftime_is_seconds("%OS"));
 ok (  Gtk2::Ex::Clock::strftime_is_seconds("%0S"));
 ok (! Gtk2::Ex::Clock::strftime_is_seconds("%MS"));
 ok (  Gtk2::Ex::Clock::strftime_is_seconds("%-12S"));
+ok (! Gtk2::Ex::Clock::strftime_is_seconds("%%Something %H:%M"));
 
 # DateTime method forms
 foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',

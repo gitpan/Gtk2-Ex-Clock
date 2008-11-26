@@ -15,30 +15,30 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
-SHA1 95f2f9592c7c6d59836c96cb5407be29830afc74 Changes
+SHA1 8fa593573a2b9e874446f26b33076d5b4f3db510 Changes
 SHA1 cc75952e9a448244498c067ad5743461e88e2361 MANIFEST
-SHA1 7d71ab02598d74aecc2c1cbe27eff5e4c1b3ce35 META.yml
-SHA1 c06cd2108ff3f9b6e689d129cf4fe8e80dcbb8fb Makefile.PL
+SHA1 d84b875fa72e7a5551ae6e2982bc3152010330f9 META.yml
+SHA1 49b9631adcfeb8159be843408746f29b6f1f2e9b Makefile.PL
 SHA1 dec1ca82dba267c4b46d0b7eae679fca39636a98 README
-SHA1 03f127d12c7da8ffeef4d2ecf317dfcee1e7acc6 debian/changelog
+SHA1 4211f244fd380a3844ef6f69bf36e1f19cbfb51e debian/changelog
 SHA1 1b6453892473a467d07372d45eb05abc2031647a debian/compat
-SHA1 47bfd8d7a1ada42a0a17c17557afaa79b7c6de81 debian/control
-SHA1 4a84b7ac966077d2e2ac1a7e8a1a9e728c88b896 debian/copyright
+SHA1 217f49b12644ac6401ed1c7cea6ef2efa3f29118 debian/control
+SHA1 849a79271f6f406d0c5437ab676af78fc98edc3d debian/copyright
 SHA1 1ab1bf681949780557dbebf5eaf721a02d9348f1 debian/rules
-SHA1 4c6b10b4379d2768a5bdf364fb3dfa26eac1b73f debian/watch
-SHA1 d23afc63e19a7c3c4e386afbb340376aa4c118ed devel/run.pl
-SHA1 97fc3ec664ec989be4532b1836b7137ad66cfab9 examples/builder.pl
+SHA1 90cc90f06f3058fd352e79230ae6c2e65aa22bd2 debian/watch
+SHA1 d8466bb50db2cd65c80e1cac4a1e8ab351343a5b devel/run.pl
+SHA1 6847626c96d2b3ff38f5f54d75dbb1c7533d2fb1 examples/builder.pl
 SHA1 c462921c5b021638785f0bb27e04913cc427b3ec examples/datetime.pl
 SHA1 8934fa93aa21af3871c391dcb41e5ac36e17fe43 examples/simple.pl
 SHA1 f817384581376f02fda6261cf44f1b30f14b03fb examples/twoline.pl
 SHA1 2a7532768db69037d992399056f9e1599eee1be8 examples/world.pl
-SHA1 d8c2ab81bba31c5a23d2ff79ac68c4a36e449d97 lib/Gtk2/Ex/Clock.pm
-SHA1 cc89b6865808979642edaa29f1d8c5b78451194f t/Clock.t
+SHA1 517f605564e6a5b6ca3e1f463bf7b260fc4b77e2 lib/Gtk2/Ex/Clock.pm
+SHA1 6fc299c01889eb39f2f29c80bf4dfd39a2451eab t/Clock.t
 SHA1 a661a39e55a4127aecb1b97a631c4f01f7dce8c6 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFIr0z1LFMCIV9q3ToRAmfDAJ9IHp6RFMkjSk+5Tu5hMNroxpB8cQCfXjgl
-CkAcll5A3XoPemWpXzbV9Go=
-=idoG
+iD8DBQFJLa8oLFMCIV9q3ToRAumYAJ9MpPaeFpCmMpfq3+h538vou6pKwgCaAvmo
++K2fJQNjOkuyIKTIDdl/9ZI=
+=UjGy
 -----END PGP SIGNATURE-----
