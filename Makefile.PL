@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -17,12 +17,13 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
+use 5.008;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile
-  (NAME         => 'Gtk2::Ex::Clock',
+  (NAME         => 'Gtk2-Ex-Clock',
    ABSTRACT     => 'Simple digital clock widget.',
    VERSION_FROM => 'lib/Gtk2/Ex/Clock.pm',
    AUTHOR       => 'Kevin Ryde <user42@zip.com.au>',
@@ -31,34 +32,47 @@ WriteMakefile
 
    PREREQ_PM    => {
                     # Gtk2 version 1.200 for GDK_PRIORITY_REDRAW
-                    # (demanding the newest for just one constant is pretty
-                    # gratuitous, but you'll almost certainly want 1.200 for
-                    # various bug fixes too)
+                    # (demanding a version just one constant is pretty
+                    # gratuitous, but you'll almost certainly it for various
+                    # bug fixes too)
+                    'Glib' => 0,
                     'Gtk2' => '1.200',
 
                     # actually this is only for the string timezone case,
                     # but it's small enough to grab always
                     'Tie::TZ' => 0,
-
-                    # builtin in recent perl anyway
-                    'Time::HiRes' => 0,
-
-                    # actually Gtk2-Perl requires perl 5.8, which has
-                    # Scalar::Util builtin already
-                    'Scalar::Util' => 0,
                    },
    clean        => { FILES => "Clock.html" },
 
    EXTRA_META => <<'HERE',
+recommends:
+    DateTime: 0
+    DateTime::TimeZone: 0
+optional_features:
+    maximum_examples:
+        description: Be able to run all the example programs.
+        requires:
+            DateTime: 0
+            DateTime::TimeZone: 0
+            DateTimeX::AATW: 0
+    maximum_tests:
+        description: Have "make test" do as much as possible.
+        requires:
+            Test::Pod: 0
+            Test::Weaken: 0
+            Test::YAML::Meta: 0
+            YAML: 0
+            YAML::Syck: 0
+            YAML::Tiny: 0
+            YAML::XS: 0
 no_index:
     directory:
         - devel
 resources:
     homepage: http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
+    license: http://www.gnu.org/licenses/#GPL
 HERE
   );
-
-
 
 
 sub MY::postamble {
@@ -71,29 +85,31 @@ Clock.html: lib/Gtk2/Ex/Clock.pm Makefile
 	  >Clock.html
 
 myman:
-	mv MANIFEST MANIFEST.old
+	-mv MANIFEST MANIFEST.old
 	touch SIGNATURE
 	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
 
-CHECKFILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
+LINT_FILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
 lint:
-	for i in $(CHECKFILES); do perl -MO=Lint $$i; done
-	podchecker    $(CHECKFILES)
+	for i in $(LINT_FILES); do perl -MO=Lint $$i; done
 pc:
-	perlcritic $(CHECKFILES)
+	-podchecker $(LINT_FILES)
+	perlcritic $(LINT_FILES)
+unused:
+	for i in $(LINT_FILES); do perl -Mwarnings::unused -I lib $$i; done
 
 # find files in the dist with mod times this year, but without this year in
 # the copyright line
 copyright-years-check:
 	year=`date +%Y`; \
 	tar tvfz $(DISTVNAME).tar.gz \
-	| grep $$year- \
+	| egrep '$$year-|debian/copyright' \
 	| sed 's:^.*$(DISTVNAME)/::' \
 	| (result=0; \
 	  while read i; do \
 	    case $$i in \
 	      '' | */ \
-	      | debian/changelog | debian/compat | debian/control \
+	      | debian/changelog | debian/compat \
 	      | t/pod.t \
 	      | COPYING | MANIFEST* | SIGNATURE | META.yml) \
 	      continue ;; \

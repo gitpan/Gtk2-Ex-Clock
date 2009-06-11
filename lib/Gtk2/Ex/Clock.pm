@@ -1,4 +1,4 @@
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -18,12 +18,12 @@
 package Gtk2::Ex::Clock;
 use strict;
 use warnings;
-use Gtk2 '1.200'; # version 1.200 for GDK_PRIORITY_REDRAW
+use Gtk2 1.200; # version 1.200 for GDK_PRIORITY_REDRAW
 use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 7;
+our $VERSION = 8;
 
 use constant DEFAULT_FORMAT => '%H:%M';
 
@@ -110,10 +110,10 @@ sub _stop_timer {
 }
 
 sub _timer_callback {
-  my ($weak_ref_self) = @_;
+  my ($ref_weak_self) = @_;
   # probably FINALIZE_INSTANCE should run before zapped by weakening, but in
   # any case if called after weakened then stop the timer
-  my $self = $$weak_ref_self || return 0; # stop
+  my $self = $$ref_weak_self || return 0; # Glib::SOURCE_REMOVE
   if (DEBUG) { print "$self run timer ", $self->{'timer_id'}||'undef', "\n"; }
 
   my $tod = Time::HiRes::gettimeofday();
@@ -127,14 +127,14 @@ sub _timer_callback {
     my $t = DateTime->from_epoch (epoch => $tod, time_zone => $timezone);
     $str = $t->strftime ($format);
 
-  } elsif (! defined $timezone || $timezone eq '') {
-    # in the current timezone
-    $str = strftime_wide ($format, localtime ($tod));
-
-  } else {
+  } elsif (defined $timezone && $timezone ne '') {
     # in the given TZ timezone string
     require Tie::TZ;
     local $Tie::TZ::TZ = $timezone;
+    $str = strftime_wide ($format, localtime ($tod));
+
+  } else {
+    # in the current timezone
     $str = strftime_wide ($format, localtime ($tod));
   }
   $self->set_label ($str);
@@ -145,8 +145,8 @@ sub _timer_callback {
   #
   my $resolution = $self->{'decided_resolution'};
   my $milliseconds
-    = POSIX::ceil ($timer_margin + 1000 * ($resolution
-                                           - POSIX::fmod ($tod, $resolution)));
+    = POSIX::ceil ($timer_margin
+                   + 1000 * ($resolution - POSIX::fmod ($tod, $resolution)));
   my $weak_self = $self;
   Scalar::Util::weaken ($weak_self);
   $self->{'timer_id'} = Glib::Timeout->add
@@ -157,7 +157,7 @@ sub _timer_callback {
       ", ${milliseconds}ms from $tod, to give ",
         $tod + $milliseconds / 1000.0,"\n";
   }
-  return 0;  # remove previous timer
+  return 0; # Glib::SOURCE_REMOVE # the previous timer
 }
 
 # $format is an strftime() format string.  Return true if it has 1 second
@@ -366,7 +366,7 @@ L<http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html>
 
 =head1 LICENSE
 
-Gtk2-Ex-Clock is Copyright 2007, 2008 Kevin Ryde
+Gtk2-Ex-Clock is Copyright 2007, 2008, 2009 Kevin Ryde
 
 Gtk2-Ex-Clock is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -379,6 +379,6 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 more details.
 
 You should have received a copy of the GNU General Public License along with
-Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
+Gtk2-Ex-Clock.  If not, see L<http://www.gnu.org/licenses/>.
 
 =cut

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -61,9 +61,10 @@ foreach my $zone ('Pacific/Honolulu',    # -10:00
   my $name = $&;
   $name =~ s/_/ /;
   my $format = "%a %I:%M %P %Z    $name";
-  $vbox->add (Gtk2::Ex::Clock->new(format   => $format,
+  my $clock = Gtk2::Ex::Clock->new(format   => $format,
                                    timezone => $zone,
-                                   xalign   => 0.0));
+                                   xalign   => 0.0);
+  $vbox->add ($clock);
 }
 
 $toplevel->show_all;

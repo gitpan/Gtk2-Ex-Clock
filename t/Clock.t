@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -21,28 +21,68 @@
 use strict;
 use warnings;
 use Gtk2::Ex::Clock;
-
-use Gtk2;
-use Test::More tests => 24;
+use Test::More tests => 25;
 
 
-ok ($Gtk2::Ex::Clock::VERSION >= 7);
-ok (Gtk2::Ex::Clock->VERSION  >= 7);
+my $want_version = 8;
+ok ($Gtk2::Ex::Clock::VERSION >= $want_version, 'VERSION variable');
+ok (Gtk2::Ex::Clock->VERSION  >= $want_version, 'VERSION class method');
+Gtk2::Ex::Clock->VERSION ($want_version);
+{
+  my $clock = Gtk2::Ex::Clock->new;
+  ok ($clock->VERSION  >= $want_version, 'VERSION object method');
+  $clock->VERSION ($want_version);
+}
 
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%c"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("x %r y"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%s"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%X"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%6s"));
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%6dS"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%S"));
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%H:%M"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%ES"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%OS"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%0S"));
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%MS"));
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%-12S"));
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%%Something %H:%M"));
+require Gtk2;
+diag ("Perl-Gtk2 version ",Gtk2->VERSION);
+diag ("Perl-Glib version ",Glib->VERSION);
+diag ("Compiled against Glib version ",
+      Glib::MAJOR_VERSION(), ".",
+      Glib::MINOR_VERSION(), ".",
+      Glib::MICRO_VERSION(), ".");
+diag ("Running on       Glib version ",
+      Glib::major_version(), ".",
+      Glib::minor_version(), ".",
+      Glib::micro_version(), ".");
+diag ("Compiled against Gtk version ",
+      Gtk2::MAJOR_VERSION(), ".",
+      Gtk2::MINOR_VERSION(), ".",
+      Gtk2::MICRO_VERSION(), ".");
+diag ("Running on       Gtk version ",
+      Gtk2::major_version(), ".",
+      Gtk2::minor_version(), ".",
+      Gtk2::micro_version(), ".");
+
+require POSIX;
+diag ("POSIX::_SC_CLK_TCK() constant ",(POSIX->can('_SC_CLK_TCK')
+                                        ? "exists" : "doesn't exist"));
+if (POSIX->can('_SC_CLK_TCK')) {
+  my $clk_tck;
+  my $ok = eval { $clk_tck = POSIX::sysconf (POSIX::_SC_CLK_TCK()); 1 };
+  diag "POSIX::sysconf(_SC_CLK_TCK) is ",
+    (! $ok ? "error $@" : (defined $clk_tck ? $clk_tck : '[undef]'));
+}
+
+
+#-----------------------------------------------------------------------------
+# strftime_is_seconds()
+
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%c"),    "%c");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("x %r y"),"x %r y");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%s"),    "%s");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%X"),    "%X");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%6s"),   "%6s");
+ok (! Gtk2::Ex::Clock::strftime_is_seconds("%6dS"),  "%6dS");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%S"),    "%S");
+ok (! Gtk2::Ex::Clock::strftime_is_seconds("%H:%M"), "%H:%M");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%ES"),   "%ES");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%OS"),   "%OS");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%0S"),   "%0S");
+ok (! Gtk2::Ex::Clock::strftime_is_seconds("%MS"),   "%MS");
+ok (  Gtk2::Ex::Clock::strftime_is_seconds("%-12S"), "%-12S");
+ok (! Gtk2::Ex::Clock::strftime_is_seconds("%%Something %H:%M"),
+    "%%Something %H:%M");
 
 # DateTime method forms
 foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
@@ -51,19 +91,16 @@ foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
   ok (Gtk2::Ex::Clock::strftime_is_seconds($format), $format);
 }
 
-{
- SKIP: {
-    if (! Gtk2->init_check) { skip 'due to no DISPLAY available', 1; }
+#-----------------------------------------------------------------------------
+# weakening
 
-    # no circular reference between the clock and the timer callback it
-    # installs
-    {
-      my $clock = Gtk2::Ex::Clock->new;
-      require Scalar::Util;
-      Scalar::Util::weaken ($clock);
-      is ($clock, undef, 'should be garbage collected when weakened');
-    }
-  }
+# no circular reference between the clock and the timer callback it
+# installs
+{
+  my $clock = Gtk2::Ex::Clock->new;
+  require Scalar::Util;
+  Scalar::Util::weaken ($clock);
+  is ($clock, undef, 'should be garbage collected when weakened');
 }
 
 exit 0;
