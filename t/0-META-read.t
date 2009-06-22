@@ -1,17 +1,17 @@
 #!/usr/bin/perl
 
-# 0-meta-read.t -- check META.yml can be read by various YAML modules
+# 0-META-read.t -- check META.yml can be read by various YAML modules
 
 # Copyright 2009 Kevin Ryde
 
-# 0-meta-read.t is shared among several distributions.
+# 0-META-read.t is shared among several distributions.
 #
-# 0-meta-read.t is free software; you can redistribute it and/or modify it
+# 0-META-read.t is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation; either version 3, or (at your option) any later
 # version.
 #
-# 0-meta-read.t is distributed in the hope that it will be useful, but
+# 0-META-read.t is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
@@ -33,7 +33,7 @@ use Test::More;
 # There's no attempt here to say one of them is best or tightest or
 # whatever, just see that they all work.
 #
-# See 0-test-yaml-meta.t for Test::YAML::Meta which looks into field
+# See 0-Test-YAML-Meta.t for Test::YAML::Meta which looks into field
 # contents, as well as maybe the YAML formatting.
 
 
@@ -44,7 +44,10 @@ if (! -f $meta_filename) {
     "$meta_filename does not exist -- assume this is a working directory not a dist";
 }
 
-plan tests => 5;
+plan tests => 6;
+
+SKIP: { eval 'use Test::NoWarnings; 1'
+          or skip 'Test::NoWarnings not available', 1; }
 
 SKIP: {
   eval { require YAML; 1 }
@@ -55,7 +58,8 @@ SKIP: {
       "Read $meta_filename with YAML module");
 }
 
-# YAML 0.68 is YAML::Old, or something, don't think they can load together
+# YAML 0.68 is in fact YAML::Old, or something weird -- don't think they can
+# load together
 #
 # SKIP: {
 #   eval { require YAML::Old; 1 }
@@ -68,7 +72,7 @@ SKIP: {
 
 SKIP: {
   eval { require YAML::Syck; 1 }
-    or skip 'due to YAML::Syck not available -- $@', 1;
+    or skip "due to YAML::Syck not available -- $@", 1;
 
   eval { YAML::Syck::LoadFile ($meta_filename) };
   is ($@, '',
@@ -77,7 +81,7 @@ SKIP: {
 
 SKIP: {
   eval { require YAML::Tiny; 1 }
-    or skip 'due to YAML::Tiny not available -- $@', 1;
+    or skip "due to YAML::Tiny not available -- $@", 1;
 
   eval { YAML::Tiny->read ($meta_filename) };
   is ($@, '',
@@ -86,7 +90,7 @@ SKIP: {
 
 SKIP: {
   eval { require YAML::XS; 1 }
-    or skip 'due to YAML::XS not available -- $@', 1;
+    or skip "due to YAML::XS not available -- $@", 1;
 
   eval { YAML::XS::LoadFile ($meta_filename) };
   is ($@, '',
@@ -100,7 +104,7 @@ SKIP: {
 #
 SKIP: {
   eval { require Parse::CPAN::Meta; 1 }
-    or skip 'due to Parse::CPAN::Meta not available -- $@', 1;
+    or skip "due to Parse::CPAN::Meta not available -- $@", 1;
 
   eval { Parse::CPAN::Meta::LoadFile ($meta_filename) };
   is ($@, '',
@@ -113,13 +117,13 @@ SKIP: {
 # SKIP: {
 #   eval { require Data::YAML::Reader; 1 }
 #     or skip 'due to Data::YAML::Reader not available -- $@', 1;
-# 
+#
 #   my $reader = Data::YAML::Reader->new;
 #   open my $fh, '<', $meta_filename
 #     or die "Cannot open $meta_filename";
 #   my $str = do { local $/=undef; <$fh> };
 #   close $fh or die;
-# 
+#
 # #   if ($str !~ /\.\.\.$/) {
 # #     $str .= "...";
 # #   }
@@ -127,9 +131,9 @@ SKIP: {
 #   push @lines, "...";
 #    use Data::Dumper;
 #    print Dumper(\@lines);
-# 
+#
 # #  { local $,="\n"; print @lines,"\n"; }
-# 
+#
 # @lines = (
 #         '--- ',
 #         '- one',
@@ -141,7 +145,7 @@ SKIP: {
 #         '- five',
 #         '... ',
 #          );
-# 
+#
 #   eval { $reader->read (\@lines) };
 #   is ($@, '',
 #       "Read $meta_filename with Data::YAML::Reader");

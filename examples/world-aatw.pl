@@ -19,7 +19,7 @@
 
 =head1 NAME
 
-world-aatw.pl -- sample program of clocks in DateTimeX::AATW zones
+world-aatw.pl -- sample program of clocks from DateTimeX::AATW
 
 =head1 SYNOPSIS
 

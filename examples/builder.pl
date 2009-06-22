@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -31,7 +31,7 @@ use Gtk2 '-init';
 use Gtk2::Ex::Clock;
 
 my $builder = Gtk2::Builder->new;
-$builder->add_from_string ('
+$builder->add_from_string (<<'HERE');
 <interface>
   <object class="GtkWindow" id="toplevel">
     <property name="type">toplevel</property>
@@ -54,7 +54,7 @@ $builder->add_from_string ('
     </child>
   </object>
 </interface>
-');
+HERE
 
 sub do_quit { Gtk2->main_quit; }
 $builder->connect_signals;

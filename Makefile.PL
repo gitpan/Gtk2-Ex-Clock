@@ -58,7 +58,9 @@ optional_features:
     maximum_tests:
         description: Have "make test" do as much as possible.
         requires:
+            Parse::CPAN::Meta: 0
             Test::Pod: 0
+            Test::NoWarnings: 0
             Test::Weaken: 0
             Test::YAML::Meta: 0
             YAML: 0

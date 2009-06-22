@@ -15,38 +15,39 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
-SHA1 9a270d43cddad35325b135e0185f5fb9baaeddc2 Changes
-SHA1 7ee2474789ec015ce99aa769b8b16b21cc542a7d MANIFEST
-SHA1 416c266e531a4a28b328ed3e8256665b73e2bcce MANIFEST.SKIP
-SHA1 3aaa29ce42ce080ccbcbf72f251f23b365ff48b0 META.yml
-SHA1 72102366d06aaf87903a584337f8d008c3190c38 Makefile.PL
+SHA1 2eba85c96dd163e17e146c1480563ee0a3f6a780 Changes
+SHA1 98b4415b836843b086c4e76a57540abe58ae1db1 MANIFEST
+SHA1 8ef51619eaa34035f2d2f67587afabe05f3a0f22 MANIFEST.SKIP
+SHA1 71b7e32667132a5f17023ade3b3d8eea4f0a605b META.yml
+SHA1 792b216ac9be32153743643658b983607c65bdc6 Makefile.PL
 SHA1 dec1ca82dba267c4b46d0b7eae679fca39636a98 README
-SHA1 4278e627d3fc4faf33fd5fab6f2cc3e6376fc561 debian/changelog
+SHA1 8ad50eff40b1a2199ec85bf80e0746b896665110 debian/changelog
 SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
-SHA1 5beb1c1aec0396745b8808b563daa3e6048cb810 debian/control
+SHA1 2b5db7e7cc3172057dae4fad2b69300602fd2d45 debian/control
 SHA1 981c11846172879d222f7f4a30274bcfa585dc7e debian/copyright
 SHA1 1ab1bf681949780557dbebf5eaf721a02d9348f1 debian/rules
 SHA1 90cc90f06f3058fd352e79230ae6c2e65aa22bd2 debian/watch
-SHA1 d8466bb50db2cd65c80e1cac4a1e8ab351343a5b devel/run.pl
+SHA1 0c85ab466988bf1779b4088faeb4793a6d34ab81 devel/run.pl
 SHA1 7b171739b5a67b5abba95c58e76a2bb71ede5b4e devel/screenshot.pl
-SHA1 6847626c96d2b3ff38f5f54d75dbb1c7533d2fb1 examples/builder.pl
+SHA1 d66e475c6a86fb4f8fbfcc7eb2b70256f1d8dbd5 examples/builder.pl
 SHA1 c462921c5b021638785f0bb27e04913cc427b3ec examples/datetime.pl
-SHA1 a90093c5f7a61936d9f098ae8e329fe91f3fa9fb examples/gtk2-ex-clock.pl
+SHA1 bdc9d70e0f22e8b3f31a1342727a66d95c50e822 examples/gtk2-ex-clock.pl
 SHA1 8934fa93aa21af3871c391dcb41e5ac36e17fe43 examples/simple.pl
 SHA1 21516a24ebab96794118db0d004f00a1244c9fb7 examples/standalone.pl
 SHA1 f817384581376f02fda6261cf44f1b30f14b03fb examples/twoline.pl
-SHA1 34e64baa196cc12118286ff0d43447c84abc45fc examples/world-aatw.pl
+SHA1 246c9542633247c543f3cfdaa7cd330e495ce7e4 examples/world-aatw.pl
 SHA1 7e0fca7caaa76f74b1403add8c6d54cf57fc71c1 examples/world.pl
-SHA1 555f81f4bb800051c405aea6e9970305e2a4ad58 lib/Gtk2/Ex/Clock.pm
-SHA1 4e343608834cc334c282e8aac763f04766da6e1f t/0-META-read.t
-SHA1 c2d28b665a07a9afb22d4736ae038a0a81701b51 t/0-Test-Pod.t
+SHA1 2152cbbb84f1e9ac729bb559ced8eff9fb5080d9 lib/Gtk2/Ex/Clock.pm
+SHA1 dbe681fa970c63a2c2f988c2191292f6f1149d76 t/0-META-read.t
+SHA1 a343ed4dce96d05de51eed1ec065911584b96fce t/0-Test-DistManifest.t
+SHA1 08742828a8bf6f21a999ed9760cbfbfcbc8f1c46 t/0-Test-Pod.t
 SHA1 1ca294949007397f7928e494900d203365bb41f6 t/0-Test-YAML-Meta.t
-SHA1 4a7ddddd7c8a23360788b98587fe5d61051e13d9 t/Clock.t
+SHA1 c238c2327aea6b42e643c7eb35f7cbc1d30a013b t/Clock.t
 SHA1 0a47506a3be8fa6209b8c5a528cf46aec15b2c76 t/test-weaken.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFKMEWgLFMCIV9q3ToRAp3oAJ9ZeCQzQyPYORysvFou04O3zwbDNACfRBrF
-rc8rHJ52PeMMtsXuGej/jw0=
-=N1in
+iD8DBQFKPsG0LFMCIV9q3ToRAkuzAJsF8iqO87suh6FedafOWaDeC1LglwCgmE00
+20bmWqkrb4PJia7aZJgdzCo=
+=WMp7
 -----END PGP SIGNATURE-----

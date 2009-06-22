@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2008 Kevin Ryde
+# Copyright 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -26,10 +26,10 @@ use DateTime;
 use DateTime::TimeZone;
 
 {
-  $ENV{'LANG'} = 'ja_JP';
   $ENV{'LANG'} = 'en_IN.UTF8';
-  $ENV{'LANG'} = 'ja_JP.UTF8';
   $ENV{'LANG'} = 'ar_IN';
+  $ENV{'LANG'} = 'ja_JP';
+  $ENV{'LANG'} = 'ja_JP.UTF8';
   setlocale(LC_ALL, '') or die;
 }
 
@@ -86,6 +86,15 @@ $toplevel->add ($vbox);
   my $clock = Gtk2::Ex::Clock->new (format => "TZ Bad Format: %! %%");
   $vbox->pack_start ($clock, 1,1,0);
 }
+
+
 $toplevel->show_all;
+
+{
+  require I18N::Langinfo;
+  my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
+  print "charset $charset\n";
+}
+
 Gtk2->main;
 exit 0;

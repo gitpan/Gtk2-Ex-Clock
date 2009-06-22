@@ -16,6 +16,7 @@
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 package Gtk2::Ex::Clock;
+use 5.008;
 use strict;
 use warnings;
 use Gtk2 1.200; # version 1.200 for GDK_PRIORITY_REDRAW
@@ -23,7 +24,7 @@ use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 8;
+our $VERSION = 9;
 
 use constant DEFAULT_FORMAT => '%H:%M';
 
@@ -63,8 +64,11 @@ use Glib::Object::Subclass
 # 10 milliseconds (giving a 20 ms margin).
 #
 my $timer_margin = -1;  # default -1 like the error return from sysconf()
-eval { $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
-if ($timer_margin == -1) { $timer_margin = 100; } # default assume 100 Hz
+{
+  ## no critic (RequireCheckingReturnValueOfEval)
+  eval { $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
+  if ($timer_margin == -1) { $timer_margin = 100; } # default assume 100 Hz
+}
 $timer_margin = 2 * 1000.0 / $timer_margin;
 if (DEBUG) { print "timer margin $timer_margin milliseconds\n"; }
 
@@ -131,11 +135,11 @@ sub _timer_callback {
     # in the given TZ timezone string
     require Tie::TZ;
     local $Tie::TZ::TZ = $timezone;
-    $str = strftime_wide ($format, localtime ($tod));
+    $str = POSIX_strftime ($format, localtime ($tod));
 
   } else {
     # in the current timezone
-    $str = strftime_wide ($format, localtime ($tod));
+    $str = POSIX_strftime ($format, localtime ($tod));
   }
   $self->set_label ($str);
 
@@ -182,22 +186,34 @@ sub strftime_is_seconds {
                        |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
 }
 
-# strftime_wide() $format and the return are wide char strings, whereas
-# plain POSIX::strftime() takes and returns locale bytes.
+#------------------------------------------------------------------------------
+# pending Glib::Ex::MoreUtils maybe ...
+
+# The strategy here is to pass only the "%" bits of $format to strftime(),
+# so it never has to see any wide chars.  Multiple "%"s either consecutive
+# or with ascii-only in between are passed in one call.  If there's no wides
+# at all then just one strftime() call is made.
 #
-# As noted in the pod below this is imperfect in that the encode/decode will
-# lose chars not representable in the locale charset.  g_date_strftime() is
-# unicode and could suit, but it's just dates, not times, so no good.  Does
-# someone have a wstrftime() kicking around?
+# No attempt is made to know what "%" forms might be supported by
+# strftime(), which is good for GNU extensions etc.  The only requirement is
+# that the format spec chars after "%" are all ascii.
 #
-sub strftime_wide {
-  my ($format, @args) = @_;
+# The return from strftime() is put through decode() since month names etc
+# coming back from it are in the locale charset.  In theory if there's no
+# "%"s at all then Encode doesn't need to be loaded, but the only purpose of
+# strftime is to format "%"s.
+#
+sub POSIX_strftime {
+  my $fmt = shift;
+  require POSIX;
+  require Encode;
   require I18N::Langinfo;
   my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
-  require Encode;
-  $format = Encode::encode ($charset, $format);
-  my $str = POSIX::strftime ($format, @args);
-  return Encode::decode ($charset, $str);
+
+  $fmt =~ s{(%[ -~\t\n\r\f\a]*)}{
+    Encode::decode ($charset, POSIX::strftime($1, @_), Encode::FB_CROAK());
+  }ge;
+  return $fmt;
 }
 
 1;

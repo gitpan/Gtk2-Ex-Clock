@@ -21,17 +21,29 @@
 use strict;
 use warnings;
 use Gtk2::Ex::Clock;
-use Test::More tests => 25;
+use Test::More tests => 30;
 
+SKIP: { eval 'use Test::NoWarnings; 1'
+          or skip 'Test::NoWarnings not available', 1; }
 
-my $want_version = 8;
-ok ($Gtk2::Ex::Clock::VERSION >= $want_version, 'VERSION variable');
-ok (Gtk2::Ex::Clock->VERSION  >= $want_version, 'VERSION class method');
-Gtk2::Ex::Clock->VERSION ($want_version);
-{
-  my $clock = Gtk2::Ex::Clock->new;
-  ok ($clock->VERSION  >= $want_version, 'VERSION object method');
-  $clock->VERSION ($want_version);
+my $want_version = 9;
+cmp_ok ($Gtk2::Ex::Clock::VERSION, '>=', $want_version,
+        'VERSION variable');
+cmp_ok (Gtk2::Ex::Clock->VERSION,  '>=', $want_version,
+        'VERSION class method');
+{ ok (eval { Gtk2::Ex::Clock->VERSION($want_version); 1 },
+      "VERSION class check $want_version");
+  my $check_version = $want_version + 1000;
+  ok (! eval { Gtk2::Ex::Clock->VERSION($check_version); 1 },
+      "VERSION class check $check_version");
+}
+{ my $ticker = Gtk2::Ex::Clock->new;
+  cmp_ok ($ticker->VERSION, '>=', $want_version, 'VERSION object method');
+  ok (eval { $ticker->VERSION($want_version); 1 },
+      "VERSION object check $want_version");
+  my $check_version = $want_version + 1000;
+  ok (! eval { $ticker->VERSION($check_version); 1 },
+      "VERSION object check $check_version");
 }
 
 require Gtk2;

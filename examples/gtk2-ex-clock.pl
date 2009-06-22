@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
-
+use 5.008;
 use strict;
 use warnings;
 use Getopt::Long;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
 
-our $VERSION = Gtk2::Ex::Clock->VERSION;
+our $VERSION = 9;
 
 my ($foreground, $background, $geometry, $use_noshrink);
 my %clock_properties;
@@ -40,7 +40,7 @@ GetOptions
      exit 0;
    },
    'help|?' => sub {
-     print <<HERE;
+     print <<'HERE';
 gtk2-ex-clock.pl [--options]
 --format=STR             strftime format string for display
 --timezone=STR           Timezone name (default TZ environment variable)

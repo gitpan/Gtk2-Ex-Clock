@@ -17,6 +17,9 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+Version 9, June 2009
+    - all wide chars in format string, irrespective of locale
+
 Version 8, June 2009
     - more example programs
 

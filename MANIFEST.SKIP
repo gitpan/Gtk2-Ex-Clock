@@ -22,20 +22,33 @@
 # emacs autosave
 (^|/)#
 
+# own dists
+^Gtk2-Ex-
+\.tar\.gz$
+\.deb$
+
 # ExtUtils::MakeMaker leaving Makefile.old
 \.old$
 
-
-\.bak$
+# built stuff
 ^Makefile$
-\.tar\.gz$
-^backup
-^misc
 ^blib
-^junk
 ^pm_to_blib
 ^TAGS$
-^Gtk2-Ex-Clock
-\.deb$
-dist-deb
-diff.tmp
+# cdbs and debhelper
+^debian/stamp-
+^debian/.*\.log$
+
+# cpantesters reports
+^msg\d*\.html$
+
+# temporaries
+^diff\.tmp
+^temp-lintian
+
+
+\.bak$
+^backup
+^misc
+^junk
+^dist-deb
