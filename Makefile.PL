@@ -21,8 +21,10 @@ use 5.008;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
+use lib 'inc';
+use MyMakeMakerExtras;
 
-WriteMakefile
+MyMakeMakerExtras::WriteMakefile
   (NAME         => 'Gtk2-Ex-Clock',
    ABSTRACT     => 'Simple digital clock widget.',
    VERSION_FROM => 'lib/Gtk2/Ex/Clock.pm',
@@ -42,103 +44,40 @@ WriteMakefile
                     # but it's small enough to grab always
                     'Tie::TZ' => 0,
                    },
-   clean        => { FILES => "Clock.html" },
 
-   EXTRA_META => <<'HERE',
-recommends:
-    DateTime: 0
-    DateTime::TimeZone: 0
-optional_features:
-    maximum_examples:
-        description: Be able to run all the example programs.
-        requires:
-            DateTime: 0
-            DateTime::TimeZone: 0
-            DateTimeX::AATW: 0
-    maximum_tests:
-        description: Have "make test" do as much as possible.
-        requires:
-            Parse::CPAN::Meta: 0
-            Test::Pod: 0
-            Test::NoWarnings: 0
-            Test::Weaken: 0
-            Test::YAML::Meta: 0
-            YAML: 0
-            YAML::Syck: 0
-            YAML::Tiny: 0
-            YAML::XS: 0
-no_index:
-    directory:
-        - devel
-resources:
-    homepage: http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html
-    license: http://www.gnu.org/licenses/#GPL
-HERE
+   META_MERGE
+   => { resources
+        => { homepage
+             => 'http://user42.tuxfamily.org/gtk2-ex-clock/index.html',
+           },
+        recommends
+        => { 'DateTime'           => 0,
+             'DateTime::TimeZone' => 0,
+           },
+        optional_features
+        => { maximum_tests
+             => { description => 'Have "make test" do as much as possible.',
+                  requires => { 'Test::Weaken' => '2.000',
+                              },
+                },
+             maximum_examples
+             => { description => 'Be able to run all the example programs.',
+                  requires => { 'DateTime'           => 0,
+                                'DateTime::TimeZone' => 0,
+                                'DateTimeX::AATW'    => 0,
+                              },
+                },
+             maximum_devel
+             => { description => 'Stuff used variously for development.',
+                  requires => { 'Glib::Ex::ConnectProperties' => 0,
+                                'Devel::StackTrace'           => 0,
+                                'Devel::FindRef'              => 0,
+                                'Devel::Peek'                 => 0,
+                              },
+                },
+           },
+      },
+
+   MyMakeMakerExtras_Pod_Coverage
+   => [ 'Gtk2::Ex::Clock,also_private,[qr/^[A-Z_]+$$/]' ],
   );
-
-
-sub MY::postamble {
-  return <<'MAKE_FRAG';
-
-Clock.html: lib/Gtk2/Ex/Clock.pm Makefile
-	-perl -MPod::Simple::HTML -e Pod::Simple::HTML::go \
-	  lib/Gtk2/Ex/Clock.pm \
-	| sed 's!http://search.cpan.org/perldoc?Gtk2%3A%3A\([^"%]*\)"!http://gtk2-perl.sourceforge.net/doc/pod/Gtk2/\1.html"!' \
-	  >Clock.html
-
-myman:
-	-mv MANIFEST MANIFEST.old
-	touch SIGNATURE
-	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
-
-LINT_FILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
-lint:
-	for i in $(LINT_FILES); do perl -MO=Lint $$i; done
-pc:
-	-podchecker $(LINT_FILES)
-	perlcritic $(LINT_FILES)
-unused:
-	for i in $(LINT_FILES); do perl -Mwarnings::unused -I lib $$i; done
-
-# find files in the dist with mod times this year, but without this year in
-# the copyright line
-copyright-years-check:
-	year=`date +%Y`; \
-	tar tvfz $(DISTVNAME).tar.gz \
-	| egrep '$$year-|debian/copyright' \
-	| sed 's:^.*$(DISTVNAME)/::' \
-	| (result=0; \
-	  while read i; do \
-	    case $$i in \
-	      '' | */ \
-	      | debian/changelog | debian/compat \
-	      | t/pod.t \
-	      | COPYING | MANIFEST* | SIGNATURE | META.yml) \
-	      continue ;; \
-	    esac; \
-	    if test -e "$(srcdir)/$$i"; then f="$(srcdir)/$$i"; \
-	    else f="$$i"; fi; \
-	    if ! grep -q "Copyright.*$$year" $$f; then \
-	      echo "$$i":"1: this file"; \
-	      grep Copyright $$f; \
-	      result=1; \
-	    fi; \
-	  done; \
-	  exit $$result)
-
-debug-constants-check:
-	if egrep -n 'DEBUG => [^0]' $(TO_INST_PM); then exit 1; else exit 0; fi
-
-diff-prev:
-	rm -rf diff.tmp
-	mkdir diff.tmp
-	cd diff.tmp \
-	&& tar xfz ../$(NAME)-`expr $(VERSION) - 1`.tar.gz \
-	&& tar xfz ../$(NAME)-$(VERSION).tar.gz
-	-cd diff.tmp; diff -ur $(NAME)-`expr $(VERSION) - 1` \
-	                       $(NAME)-$(VERSION) >tree.diff
-	-less diff.tmp/tree.diff
-	rm -rf diff.tmp
-
-MAKE_FRAG
-}

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2008, 2009 Kevin Ryde
+# Copyright 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -68,7 +68,7 @@ $toplevel->add ($vbox);
                  'epoch');
   my $tz = DateTime::TimeZone->new (name => 'GMT');
   foreach my $method (@methods) {
-    my $clock = Gtk2::Ex::Clock->new (format => "DateTime::$method \%{$method}",
+    my $clock = Gtk2::Ex::Clock->new (format => "DateTime::$method %{$method}",
                                       timezone => $tz);
     $vbox->pack_start ($clock, 1,1,0);
   }

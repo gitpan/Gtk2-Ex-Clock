@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.55.
+signed via the Module::Signature module, version 0.61.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,40 +14,44 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
-SHA1 2eba85c96dd163e17e146c1480563ee0a3f6a780 Changes
-SHA1 98b4415b836843b086c4e76a57540abe58ae1db1 MANIFEST
-SHA1 8ef51619eaa34035f2d2f67587afabe05f3a0f22 MANIFEST.SKIP
-SHA1 71b7e32667132a5f17023ade3b3d8eea4f0a605b META.yml
-SHA1 792b216ac9be32153743643658b983607c65bdc6 Makefile.PL
-SHA1 dec1ca82dba267c4b46d0b7eae679fca39636a98 README
-SHA1 8ad50eff40b1a2199ec85bf80e0746b896665110 debian/changelog
+SHA1 842745cb706f8f2126506f544492f7a80dbe29b3 COPYING
+SHA1 020f973a51b2487978c54e30e24a24b90e0ddc9b Changes
+SHA1 672385259e6dde666531aac19fd4f5bba8e5bf14 MANIFEST
+SHA1 a5702ed4c66c943b47354756b340812302d15e6f MANIFEST.SKIP
+SHA1 67bba10fe8613c1d78f1fcffafc8431dda9f5a6f META.yml
+SHA1 4121067ad0f828e14cb2b941af0db37be1789c2b Makefile.PL
+SHA1 15babf22057775fd5e63a95eb9031f8108782f1b README
+SHA1 7685a4aeb8cf01ef695a6cf68856f35c3cdd8abc debian/changelog
 SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
-SHA1 2b5db7e7cc3172057dae4fad2b69300602fd2d45 debian/control
-SHA1 981c11846172879d222f7f4a30274bcfa585dc7e debian/copyright
+SHA1 301d855d31c0bf44483a4b57ef4aadf84a200e58 debian/control
+SHA1 6c4b06818e7ffae2924174a33c8329f7919aa804 debian/copyright
 SHA1 1ab1bf681949780557dbebf5eaf721a02d9348f1 debian/rules
-SHA1 90cc90f06f3058fd352e79230ae6c2e65aa22bd2 debian/watch
-SHA1 0c85ab466988bf1779b4088faeb4793a6d34ab81 devel/run.pl
-SHA1 7b171739b5a67b5abba95c58e76a2bb71ede5b4e devel/screenshot.pl
+SHA1 140473013a3d757b2a8ca0dd48b2b2a9033d0073 debian/watch
+SHA1 b2ab6d90bc045d4f856f1b48ee8feb6e0638fb4c devel/run.pl
+SHA1 cdb7c14aa1ed775110d28a09ce820869407b9f00 devel/screenshot.pl
+SHA1 ab8822d46c2b7f02a9125b33c628da5ac2ddf848 devel/strftime.pl
 SHA1 d66e475c6a86fb4f8fbfcc7eb2b70256f1d8dbd5 examples/builder.pl
-SHA1 c462921c5b021638785f0bb27e04913cc427b3ec examples/datetime.pl
-SHA1 bdc9d70e0f22e8b3f31a1342727a66d95c50e822 examples/gtk2-ex-clock.pl
+SHA1 0464cfb7fcc3ff3b0780e8715e9c46478075dbd3 examples/datetime.pl
+SHA1 016cc7ff54ab8ec09bd408c4a5497302cd9cedb8 examples/gtk2-ex-clock.pl
 SHA1 8934fa93aa21af3871c391dcb41e5ac36e17fe43 examples/simple.pl
-SHA1 21516a24ebab96794118db0d004f00a1244c9fb7 examples/standalone.pl
+SHA1 bd6fc830f158a940090f792195891666ee33d0e3 examples/standalone.pl
 SHA1 f817384581376f02fda6261cf44f1b30f14b03fb examples/twoline.pl
-SHA1 246c9542633247c543f3cfdaa7cd330e495ce7e4 examples/world-aatw.pl
+SHA1 8dbc55a8c747c4d432973c2f8ebfd435b18baabe examples/world-aatw.pl
 SHA1 7e0fca7caaa76f74b1403add8c6d54cf57fc71c1 examples/world.pl
-SHA1 2152cbbb84f1e9ac729bb559ced8eff9fb5080d9 lib/Gtk2/Ex/Clock.pm
-SHA1 dbe681fa970c63a2c2f988c2191292f6f1149d76 t/0-META-read.t
+SHA1 89dd306a01b5719586e53f05938f9b28ab94717e inc/MyMakeMakerExtras.pm
+SHA1 8e2847ef2d040879f7a2838735f676d287e32da7 inc/my_pod2html
+SHA1 83da404f27edb0d00c65e8145c39cf33379037d8 lib/Gtk2/Ex/Clock.pm
+SHA1 11eda0347af48309996833a4da214197e31b85fb t/0-META-read.t
 SHA1 a343ed4dce96d05de51eed1ec065911584b96fce t/0-Test-DistManifest.t
-SHA1 08742828a8bf6f21a999ed9760cbfbfcbc8f1c46 t/0-Test-Pod.t
-SHA1 1ca294949007397f7928e494900d203365bb41f6 t/0-Test-YAML-Meta.t
-SHA1 c238c2327aea6b42e643c7eb35f7cbc1d30a013b t/Clock.t
-SHA1 0a47506a3be8fa6209b8c5a528cf46aec15b2c76 t/test-weaken.t
+SHA1 bba0dc087cbe64d8f100ab77e6cef061c0bebf27 t/0-Test-Pod.t
+SHA1 39fb4f79da7687abc825c4ea646acb3ee9e3a342 t/0-Test-YAML-Meta.t
+SHA1 07921c4f936e2a3a8bef5d1fd3c7a75348ba6131 t/Clock.t
+SHA1 e5b9059d5e27d380fc9418095d773ad5f96baa06 t/MyTestHelpers.pm
+SHA1 d25728db828aea2187740d012fd84dfa92bc8138 t/test-weaken.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iD8DBQFKPsG0LFMCIV9q3ToRAkuzAJsF8iqO87suh6FedafOWaDeC1LglwCgmE00
-20bmWqkrb4PJia7aZJgdzCo=
-=WMp7
+iD8DBQFLhuNVLFMCIV9q3ToRAuarAJ9+FJQV/RieGpOKsynaVgO3n1rPsACgsMSW
+gYsXPKjeRX/Bptf5QwuAO7A=
+=/TWm
 -----END PGP SIGNATURE-----

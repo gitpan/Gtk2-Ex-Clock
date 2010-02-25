@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2009 Kevin Ryde
+# Copyright 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -24,7 +24,7 @@ use Getopt::Long;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
 
-our $VERSION = 9;
+our $VERSION = 10;
 
 my ($foreground, $background, $geometry, $use_noshrink);
 my %clock_properties;
@@ -156,9 +156,9 @@ sub button_release {
     $drag_last_x_root = undef;
   }
 }
-# In theory you're meant to move with $toplevel->move, not its window, but
-# as of Gtk 2.16.1 there's some dodginess between it and fvwm2; the window
-# move works, the widget move goes to the wrong place.
+# In theory you're meant to move with widget $toplevel->move, not its
+# underlying window, but as of Gtk 2.16.1 there's some dodginess between it
+# and fvwm2; a window move works, a widget move goes to the wrong place.
 sub drag {
   my ($x_root, $y_root) = @_;
   defined $drag_last_x_root or return;
@@ -170,8 +170,6 @@ sub drag {
   $drag_last_y_root = $y_root;
 }
 
-
-#------------------------------------------------------------------------------
 
 $toplevel->show_all;
 Gtk2->main;
@@ -186,13 +184,13 @@ gtk2-ex-clock.pl -- simple digital clock program
 
 =head1 SYNOPSIS
 
- gtk2-ex-clock.pl --format="%I:%M %P"
+ gtk2-ex-clock.pl [--options]
 
 =head1 DESCRIPTION
 
 C<gtk2-ex-clock.pl> displays a digital clock using C<Gtk2::Ex::Clock>.  It's
 pretty simple, and there's a dozen other clock programs doing the same
-thing, but this one uses C<Gtk2::Ex::Clock> including optionally using
+thing, but this one uses C<Gtk2::Ex::Clock>, and optionally
 C<DateTime::TimeZone>.
 
 Button-1 drags the clock around (plus any usual key/button combination the
@@ -207,6 +205,8 @@ a two-button mouse button-3 is usually the right hand button.
 
 C<strftime> format string for the display.  See C<man strftime> or C<man
 date> for possible formats.  The default is "%H:%M" for hours and minutes.
+
+    gtk2-ex-clock.pl --format="%I:%M %P"
 
 =item --timezone=STR
 
@@ -234,8 +234,8 @@ the right resolution from the format string.
 =item --background=COLOUR
 
 Set the foreground and background colours.  The colours can be names from
-the X RGB database, or hex style #RRGGBB.  For example white on a shade of
-red,
+the X RGB database (F</etc/X11/rgb.txt>), or hex style #RRGGBB.  For example
+white on a shade of red,
 
     gtk2-ex-clock.pl --foreground=white --background=#A01010
 
@@ -243,7 +243,7 @@ red,
 
 Set the size and position of the clock window.  See C<man X> on geometry
 specification strings.  For example to start at the top-right of the screen,
-with the clock's usual desired size.
+leaving the size to the clock's default.
 
     gtk2-ex-clock.pl --geomentry=-0+0
 
@@ -259,7 +259,7 @@ Print program version.
 
 Standard Gtk options.  See C<man gtk-options> for the full list.  The only
 one which does much for C<gtk2-ex-clock.pl> is C<--display> to set the X
-display to use (default from the C<DISPLAY> environment variable).
+display (default from the C<DISPLAY> environment variable).
 
 =back
 
@@ -270,11 +270,11 @@ L<Gtk2::Ex::NoShrink>, C<gtk-options>
 
 =head1 HOME PAGE
 
-L<http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html>
+L<http://user42.tuxfamily.org/gtk2-ex-clock/index.html>
 
 =head1 LICENSE
 
-Gtk2-Ex-Clock is Copyright 2007, 2008, 2009 Kevin Ryde
+Gtk2-Ex-Clock is Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 Gtk2-Ex-Clock is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

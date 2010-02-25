@@ -24,7 +24,7 @@ use POSIX ();
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 9;
+our $VERSION = 10;
 
 use constant DEFAULT_FORMAT => '%H:%M';
 
@@ -346,11 +346,8 @@ localizations from the C<< DateTime->DefaultLocale >> (see L<DateTime>).
 Generally you must make a call to set C<DefaultLocale> yourself at some
 point early in the program.
 
-The C<format> string can include unicode in Perl's usual wide-char fashion.
-Currently for C<POSIX::strftime> it's converted to the locale charset then
-back again, so you'll be limited to what's representable in the locale
-charset.  For C<DateTime::TimeZone> all characters can be used irrespective
-of the locale.
+The C<format> string can include wide-char unicode in Perl's usual fashion,
+for both C<POSIX::strftime> and C<DateTime>.
 
 =head1 IMPLEMENATION
 
@@ -365,11 +362,11 @@ even try a NoShrink (see L<Gtk2::Ex::NoShrink>).
 The way C<TZ> is temporarily changed to implement a non-local timezone could
 be slightly on the slow side.  The GNU C Library (as of version 2.7) for
 instance opens and re-reads a zoneinfo file on each change.  Doing that
-(twice) each minute is fine, but for seconds you may prefer
-C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread safe either,
-though rumour has it you have to be extremely careful with threads and
-Gtk2-Perl anyway, so you probably won't be using threads.  Again you can use
-a C<DateTime::TimeZone> object if you're nervous.
+twice (to the new and back to the old) each minute is fine, but for seconds
+you may prefer C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread
+safe either, though rumour has it you have to be extremely careful with
+threads and Gtk2-Perl anyway, so you probably won't be using threads.  Again
+you can use a C<DateTime::TimeZone> object if you're nervous.
 
 =head1 SEE ALSO
 
@@ -378,7 +375,7 @@ L<DateTime::TimeZone>, L<DateTime>
 
 =head1 HOME PAGE
 
-L<http://www.geocities.com/user42_kevin/gtk2-ex-clock/index.html>
+L<http://user42.tuxfamily.org/gtk2-ex-clock/index.html>
 
 =head1 LICENSE
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -17,54 +17,40 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
-
+use 5.008;
 use strict;
 use warnings;
-use Gtk2::Ex::Clock;
 use Test::More tests => 30;
 
-SKIP: { eval 'use Test::NoWarnings; 1'
-          or skip 'Test::NoWarnings not available', 1; }
+BEGIN { SKIP: { eval 'use Test::NoWarnings; 1'
+                  or skip 'Test::NoWarnings not available', 1; } }
 
-my $want_version = 9;
-cmp_ok ($Gtk2::Ex::Clock::VERSION, '>=', $want_version,
-        'VERSION variable');
-cmp_ok (Gtk2::Ex::Clock->VERSION,  '>=', $want_version,
-        'VERSION class method');
-{ ok (eval { Gtk2::Ex::Clock->VERSION($want_version); 1 },
+use lib 't';
+use MyTestHelpers;
+
+require Gtk2::Ex::Clock;
+
+{
+  my $want_version = 10;
+  is ($Gtk2::Ex::Clock::VERSION, $want_version, 'VERSION variable');
+  is (Gtk2::Ex::Clock->VERSION,  $want_version, 'VERSION class method');
+
+  ok (eval { Gtk2::Ex::Clock->VERSION($want_version); 1 },
       "VERSION class check $want_version");
   my $check_version = $want_version + 1000;
   ok (! eval { Gtk2::Ex::Clock->VERSION($check_version); 1 },
       "VERSION class check $check_version");
-}
-{ my $ticker = Gtk2::Ex::Clock->new;
-  cmp_ok ($ticker->VERSION, '>=', $want_version, 'VERSION object method');
-  ok (eval { $ticker->VERSION($want_version); 1 },
+
+  my $clock = Gtk2::Ex::Clock->new;
+  is ($clock->VERSION, $want_version, 'VERSION object method');
+  ok (eval { $clock->VERSION($want_version); 1 },
       "VERSION object check $want_version");
-  my $check_version = $want_version + 1000;
-  ok (! eval { $ticker->VERSION($check_version); 1 },
+  ok (! eval { $clock->VERSION($check_version); 1 },
       "VERSION object check $check_version");
 }
 
 require Gtk2;
-diag ("Perl-Gtk2 version ",Gtk2->VERSION);
-diag ("Perl-Glib version ",Glib->VERSION);
-diag ("Compiled against Glib version ",
-      Glib::MAJOR_VERSION(), ".",
-      Glib::MINOR_VERSION(), ".",
-      Glib::MICRO_VERSION(), ".");
-diag ("Running on       Glib version ",
-      Glib::major_version(), ".",
-      Glib::minor_version(), ".",
-      Glib::micro_version(), ".");
-diag ("Compiled against Gtk version ",
-      Gtk2::MAJOR_VERSION(), ".",
-      Gtk2::MINOR_VERSION(), ".",
-      Gtk2::MICRO_VERSION(), ".");
-diag ("Running on       Gtk version ",
-      Gtk2::major_version(), ".",
-      Gtk2::minor_version(), ".",
-      Gtk2::micro_version(), ".");
+MyTestHelpers::glib_gtk_versions();
 
 require POSIX;
 diag ("POSIX::_SC_CLK_TCK() constant ",(POSIX->can('_SC_CLK_TCK')

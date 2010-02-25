@@ -27,7 +27,7 @@
 # snap-to-edge the way most window managers have though.
 #
 
-
+use 5.008;
 use strict;
 use warnings;
 use Gtk2 '-init';

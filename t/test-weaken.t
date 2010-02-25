@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -22,6 +22,9 @@ use warnings;
 use Gtk2::Ex::Clock;
 use Test::More;
 
+use lib 't';
+use MyTestHelpers;
+
 my $have_test_weaken = eval "use Test::Weaken 2.000; 1";
 if (! $have_test_weaken) {
   plan skip_all => "due to Test::Weaken 2.000 not available -- $@";
@@ -30,24 +33,7 @@ plan tests => 1;
 
 diag ("Test::Weaken version ", Test::Weaken->VERSION);
 require Gtk2;
-diag ("Perl-Gtk2    version ",Gtk2->VERSION);
-diag ("Perl-Glib    version ",Glib->VERSION);
-diag ("Compiled against Glib version ",
-      Glib::MAJOR_VERSION(), ".",
-      Glib::MINOR_VERSION(), ".",
-      Glib::MICRO_VERSION());
-diag ("Running on       Glib version ",
-      Glib::major_version(), ".",
-      Glib::minor_version(), ".",
-      Glib::micro_version());
-diag ("Compiled against Gtk version ",
-      Gtk2::MAJOR_VERSION(), ".",
-      Gtk2::MINOR_VERSION(), ".",
-      Gtk2::MICRO_VERSION());
-diag ("Running on       Gtk version ",
-      Gtk2::major_version(), ".",
-      Gtk2::minor_version(), ".",
-      Gtk2::micro_version());
+MyTestHelpers::glib_gtk_versions();
 
 
 #-----------------------------------------------------------------------------
@@ -55,7 +41,7 @@ diag ("Running on       Gtk version ",
 {
   my $leaks = Test::Weaken::leaks (sub { return Gtk2::Ex::Clock->new });
   is ($leaks, undef, 'deep garbage collection');
-  if ($leaks) {
+  if ($leaks && defined &explain) {
     diag "Test-Weaken ", explain $leaks;
   }
 }

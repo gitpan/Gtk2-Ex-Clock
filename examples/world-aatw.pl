@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2009 Kevin Ryde
+# Copyright 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -19,7 +19,7 @@
 
 =head1 NAME
 
-world-aatw.pl -- sample program of clocks from DateTimeX::AATW
+world-aatw.pl -- sample program displaying DateTimeX::AATW clocks
 
 =head1 SYNOPSIS
 
@@ -28,13 +28,13 @@ world-aatw.pl -- sample program of clocks from DateTimeX::AATW
 =head1 DESCRIPTION
 
 This is a bit of fun showing timezones around the world picked out by the
-DateTimeX::AATW "all around the world" module.  You need it and
-DateTime::TimeZone to run this program.
+C<DateTimeX::AATW> "all around the world" module.  You must have it and
+C<DateTime::TimeZone> to run this program.
 
-Depending on how fast your computer is, DateTimeX::AATW may take a few
-seconds churning through the zones finding their offsets.  In a real program
-you might display a waiting message or something, but here it's just a bit
-slow starting up.
+Depending on how fast your computer is, C<DateTimeX::AATW> may take a few
+seconds churning through the zones finding offsets.  In a real program you
+could display a waiting message or something, but here it's just takes a
+moment to start.
 
 =head1 SEE ALSO
 

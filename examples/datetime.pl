@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -18,22 +18,49 @@
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# Clock display using DateTime::TimeZone.
+=head1 NAME
 
+datetime.pl -- Clock display using DateTime::TimeZone
+
+=head1 SYNOPSIS
+
+ ./datetime.pl
+
+ LANGUAGE=de ./datetime.pl
+
+=cut
+
+#-----------------------------------------------------------------------------
 
 use strict;
 use warnings;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
+use DateTime;
 use DateTime::TimeZone;
+
+# locale setup for DateTime, using the first of Glib's get_language_names()
+# which works (you probably need the DateTime::Locale package installed)
+#
+foreach my $lang (Glib::get_language_names()) {
+  if (eval { DateTime->DefaultLocale($lang) }) {
+    print "DateTime locale    '$lang'\n";
+    last;
+  }
+}
+
+# DateTime::TimeZone object
+#
+my $timezone = DateTime::TimeZone->new (name => 'Australia/Perth');
+print "DateTime::TimeZone '", $timezone->name, "'\n";
+
 
 my $toplevel = Gtk2::Window->new('toplevel');
 $toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
 
 # when using DateTime::TimeZone the format is passed to DateTime->strftime,
-# so its extra %{method} format style is available.
+# so its extra %{method} forms are available.
 #
-my $timezone = DateTime::TimeZone->new(name => 'Australia/Perth');
 my $clock = Gtk2::Ex::Clock->new (format => '%{day_name} %H:%M',
                                   timezone=> $timezone);
 $toplevel->add ($clock);
