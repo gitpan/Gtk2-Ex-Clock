@@ -31,7 +31,7 @@ use MyTestHelpers;
 require Gtk2::Ex::Clock;
 
 {
-  my $want_version = 10;
+  my $want_version = 11;
   is ($Gtk2::Ex::Clock::VERSION, $want_version, 'VERSION variable');
   is (Gtk2::Ex::Clock->VERSION,  $want_version, 'VERSION class method');
 

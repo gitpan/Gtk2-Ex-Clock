@@ -17,6 +17,9 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+Version 11, April 2010
+    - use POSIX::Wide, fixes netbsd locale codeset "646"
+
 Version 10, February 2010
     - new home page
 

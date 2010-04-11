@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -43,6 +43,9 @@ MyMakeMakerExtras::WriteMakefile
                     # actually this is only for the string timezone case,
                     # but it's small enough to grab always
                     'Tie::TZ' => 0,
+
+                    # version 2 for netbsd 646 alias
+                    'POSIX::Wide' => 2,
                    },
 
    META_MERGE

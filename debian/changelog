@@ -1,5 +1,5 @@
-libgtk2-ex-clock-perl (10-1) unstable; urgency=low
+libgtk2-ex-clock-perl (11-1) unstable; urgency=low
 
   * Packaged version.
 
- -- Kevin Ryde <user42@zip.com.au>  Thu, 25 Feb 2010 10:16:39 +1100
+ -- Kevin Ryde <user42@zip.com.au>  Mon, 12 Apr 2010 08:50:39 +1000

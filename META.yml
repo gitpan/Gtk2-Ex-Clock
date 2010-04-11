@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Gtk2-Ex-Clock
-version:            10
+version:            11
 abstract:           Simple digital clock widget.
 author:
     - Kevin Ryde <user42@zip.com.au>
@@ -11,9 +11,10 @@ configure_requires:
 build_requires:
     ExtUtils::MakeMaker:  0
 requires:
-    Glib:     0
-    Gtk2:     1.200
-    Tie::TZ:  0
+    Glib:         0
+    Gtk2:         1.200
+    POSIX::Wide:  2
+    Tie::TZ:      0
 resources:
     homepage:  http://user42.tuxfamily.org/gtk2-ex-clock/index.html
     license:   http://www.gnu.org/licenses/gpl.html

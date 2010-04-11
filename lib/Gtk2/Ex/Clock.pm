@@ -1,4 +1,4 @@
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -21,10 +21,11 @@ use strict;
 use warnings;
 use Gtk2 1.200; # version 1.200 for GDK_PRIORITY_REDRAW
 use POSIX ();
+use POSIX::Wide 2; # version 2 for netbsd 646 alias
 use Scalar::Util;
 use Time::HiRes;
 
-our $VERSION = 10;
+our $VERSION = 11;
 
 use constant DEFAULT_FORMAT => '%H:%M';
 
@@ -135,11 +136,11 @@ sub _timer_callback {
     # in the given TZ timezone string
     require Tie::TZ;
     local $Tie::TZ::TZ = $timezone;
-    $str = POSIX_strftime ($format, localtime ($tod));
+    $str = POSIX::Wide::strftime ($format, localtime ($tod));
 
   } else {
     # in the current timezone
-    $str = POSIX_strftime ($format, localtime ($tod));
+    $str = POSIX::Wide::strftime ($format, localtime ($tod));
   }
   $self->set_label ($str);
 
@@ -184,36 +185,6 @@ sub strftime_is_seconds {
   return ($format =~ /%[-_^0-9EO]*
                        ([crsSTX]
                        |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
-}
-
-#------------------------------------------------------------------------------
-# pending Glib::Ex::MoreUtils maybe ...
-
-# The strategy here is to pass only the "%" bits of $format to strftime(),
-# so it never has to see any wide chars.  Multiple "%"s either consecutive
-# or with ascii-only in between are passed in one call.  If there's no wides
-# at all then just one strftime() call is made.
-#
-# No attempt is made to know what "%" forms might be supported by
-# strftime(), which is good for GNU extensions etc.  The only requirement is
-# that the format spec chars after "%" are all ascii.
-#
-# The return from strftime() is put through decode() since month names etc
-# coming back from it are in the locale charset.  In theory if there's no
-# "%"s at all then Encode doesn't need to be loaded, but the only purpose of
-# strftime is to format "%"s.
-#
-sub POSIX_strftime {
-  my $fmt = shift;
-  require POSIX;
-  require Encode;
-  require I18N::Langinfo;
-  my $charset = I18N::Langinfo::langinfo (I18N::Langinfo::CODESET());
-
-  $fmt =~ s{(%[ -~\t\n\r\f\a]*)}{
-    Encode::decode ($charset, POSIX::strftime($1, @_), Encode::FB_CROAK());
-  }ge;
-  return $fmt;
 }
 
 1;
@@ -379,7 +350,7 @@ L<http://user42.tuxfamily.org/gtk2-ex-clock/index.html>
 
 =head1 LICENSE
 
-Gtk2-Ex-Clock is Copyright 2007, 2008, 2009 Kevin Ryde
+Gtk2-Ex-Clock is Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 Gtk2-Ex-Clock is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
