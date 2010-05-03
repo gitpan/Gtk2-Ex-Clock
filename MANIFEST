@@ -4,17 +4,24 @@ debian/changelog
 debian/compat
 debian/control
 debian/copyright
+debian/patches/pod-examples-dir.diff
 debian/rules
 debian/source/format
 debian/watch
+devel/cldr.pl
+devel/run-one.pl
 devel/run.pl
 devel/screenshot.pl
 devel/strftime.pl
+devel/tai.pl
+devel/time-mock.pl
+devel/unmapped.pl
 examples/builder.pl
 examples/datetime.pl
 examples/gtk2-ex-clock.pl
 examples/simple.pl
 examples/standalone.pl
+examples/tai.pl
 examples/twoline.pl
 examples/world-aatw.pl
 examples/world.pl
@@ -30,7 +37,8 @@ t/0-META-read.t
 t/0-Test-DistManifest.t
 t/0-Test-Pod.t
 t/0-Test-YAML-Meta.t
+t/Clock-display.t
+t/Clock-weaken.t
 t/Clock.t
 t/MyTestHelpers.pm
-t/test-weaken.t
 META.yml                                 Module meta-data (added by MakeMaker)

@@ -31,14 +31,17 @@ MyMakeMakerExtras::WriteMakefile
    AUTHOR       => 'Kevin Ryde <user42@zip.com.au>',
    LICENSE      => 'gpl',
    SIGN         => 1,
+   MIN_PERL_VERSION => '5.008',
 
    PREREQ_PM    => {
                     # Gtk2 version 1.200 for GDK_PRIORITY_REDRAW
                     # (demanding a version just one constant is pretty
                     # gratuitous, but you'll almost certainly it for various
                     # bug fixes too)
-                    'Glib' => 0,
                     'Gtk2' => '1.200',
+                    'Glib::Object::Subclass' => 0,
+
+                    'Glib::Ex::SourceIds' => 2,  # ObjectBits v.2
 
                     # actually this is only for the string timezone case,
                     # but it's small enough to grab always
@@ -58,25 +61,36 @@ MyMakeMakerExtras::WriteMakefile
              'DateTime::TimeZone' => 0,
            },
         optional_features
-        => { maximum_tests
+        => { with_datetime
+             => { description => 'Have "make test" do as much as possible.',
+                  requires => { 'DateTime'           => 0,
+                                'DateTime::TimeZone' => 0,
+                              },
+                },
+             maximum_tests
              => { description => 'Have "make test" do as much as possible.',
                   requires => { 'Test::Weaken' => '2.000',
                               },
                 },
              maximum_examples
              => { description => 'Be able to run all the example programs.',
-                  requires => { 'DateTime'           => 0,
-                                'DateTime::TimeZone' => 0,
-                                'DateTimeX::AATW'    => 0,
+                  requires => { 'DateTime'                => 0,
+                                'DateTime::TimeZone'      => 0,
+                                'DateTime::TimeZone::TAI' => 0,
+                                'DateTimeX::AATW'         => 0,
                               },
                 },
              maximum_devel
              => { description => 'Stuff used variously for development.',
                   requires => { 'Glib::Ex::ConnectProperties' => 0,
-                                'Devel::StackTrace'           => 0,
+                                'Glib::Ex::SignalIds'         => 0,
                                 'Devel::FindRef'              => 0,
-                                'Devel::Peek'                 => 0,
+                                'DateTime'                    => 0,
+                                'DateTime::TimeZone'          => 0,
+                                'DateTime::TimeZone::TAI'     => 0,
+                                'Time::Mock'                  => 0,
                               },
+
                 },
            },
       },

@@ -25,18 +25,16 @@ use Test::More;
 use lib 't';
 use MyTestHelpers;
 
-my $have_test_weaken = eval "use Test::Weaken 2.000; 1";
-if (! $have_test_weaken) {
-  plan skip_all => "due to Test::Weaken 2.000 not available -- $@";
+BEGIN {
+  eval "use Test::Weaken 2.000; 1"
+    or plan skip_all => "due to Test::Weaken 2.000 not available -- $@";
+  diag ("Test::Weaken version ", Test::Weaken->VERSION);
+
+  plan tests => 2;
+
+ SKIP: { eval 'use Test::NoWarnings; 1'
+           or skip 'Test::NoWarnings not available', 1; }
 }
-plan tests => 1;
-
-diag ("Test::Weaken version ", Test::Weaken->VERSION);
-require Gtk2;
-MyTestHelpers::glib_gtk_versions();
-
-
-#-----------------------------------------------------------------------------
 
 {
   my $leaks = Test::Weaken::leaks (sub { return Gtk2::Ex::Clock->new });

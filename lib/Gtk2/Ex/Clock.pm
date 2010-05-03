@@ -22,23 +22,25 @@ use warnings;
 use Gtk2 1.200; # version 1.200 for GDK_PRIORITY_REDRAW
 use POSIX ();
 use POSIX::Wide 2; # version 2 for netbsd 646 alias
+use List::Util qw(min);
 use Scalar::Util;
 use Time::HiRes;
+use Glib::Ex::SourceIds;
 
-our $VERSION = 11;
+# uncomment this to run the ### lines
+#use Smart::Comments;
 
-use constant DEFAULT_FORMAT => '%H:%M';
+our $VERSION = 12;
 
-# set this to 1 for some diagnostic prints
-use constant DEBUG => 0;
+use constant _DEFAULT_FORMAT => '%H:%M';
 
 use Glib::Object::Subclass
-  Gtk2::Label::,
+  'Gtk2::Label',
   properties => [Glib::ParamSpec->string
                  ('format',
                   'format',
                   'An strftime() format string to display the time.',
-                  DEFAULT_FORMAT,
+                  _DEFAULT_FORMAT,
                   Glib::G_PARAM_READWRITE),
 
                  Glib::ParamSpec->scalar
@@ -52,124 +54,155 @@ use Glib::Object::Subclass
                   'resolution',
                   'The resolution of the clock, in seconds, or 0 to decide this from the format string.',
                   0, 3600, 0,
-                  Glib::G_PARAM_READWRITE)
+                  Glib::G_PARAM_READWRITE),
                 ];
 
-# $timer_margin is an extra period in milliseconds to add to the timer
-# period requested.  It's designed to ensure the timer doesn't fire before
-# the target time boundary of 1 second or 1 minute if g_timeout_add() (or
-# the select() within it) ends up rounding to a clock tick boundary.
+
+# _TIMER_MARGIN_MILLISECONDS is an extra period in milliseconds to add to
+# the timer period requested.  It's designed to ensure the timer doesn't
+# fire before the target time boundary of 1 second or 1 minute, in case
+# g_timeout_add() or the select() within it ends up rounding to a clock tick
+# boundary.
 #
-# In the unlikely event there's no sysconf value for CLK_TCK, or no sysconf
-# func at all, assume the traditional 100 ticks/second, ie. a resolution of
-# 10 milliseconds (giving a 20 ms margin).
+# In the unlikely event there's no sysconf() value for CLK_TCK, or no
+# sysconf() func at all, assume the traditional 100 ticks/second, ie. a
+# resolution of 10 milliseconds, giving a 20 ms margin.
 #
-my $timer_margin = -1;  # default -1 like the error return from sysconf()
-{
+use constant _TIMER_MARGIN_MILLISECONDS => do {
+  my $clk_tck = -1;  # default -1 like the error return from sysconf()
   ## no critic (RequireCheckingReturnValueOfEval)
-  eval { $timer_margin = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
-  if ($timer_margin == -1) { $timer_margin = 100; } # default assume 100 Hz
-}
-$timer_margin = 2 * 1000.0 / $timer_margin;
-if (DEBUG) { print "timer margin $timer_margin milliseconds\n"; }
+  eval { $clk_tck = POSIX::sysconf (POSIX::_SC_CLK_TCK()); };
+  ### $clk_tck
+  if ($clk_tck <= 0) { $clk_tck = 100; } # default assume 100 Hz, 10ms tick
+  (2 * 1000.0 / $clk_tck)
+};
+### _TIMER_MARGIN_MILLISECONDS: _TIMER_MARGIN_MILLISECONDS()
 
 
 sub INIT_INSTANCE {
   my ($self) = @_;
-  $self->{'format'} = DEFAULT_FORMAT;
+  $self->{'format'} = _DEFAULT_FORMAT;
+  $self->{'decided_resolution'} = 60; # of _DEFAULT_FORMAT
   $self->set_use_markup (1);
-  _decide_resolution_and_update ($self);
-}
-
-sub FINALIZE_INSTANCE {
-  my ($self) = @_;
-  if (DEBUG) { print "$self destroy\n"; }
-  _stop_timer ($self);
+  _update($self);  # initial string for initial size
 }
 
 sub SET_PROPERTY {
   my ($self, $pspec, $newval) = @_;
-  $self->{$pspec->get_name} = $newval;  # per default GET_PROPERTY
+  my $pname = $pspec->get_name;
+  ### Clock SET_PROPERTY: $pname
+  $self->{$pname} = $newval;  # per default GET_PROPERTY
 
-  _decide_resolution_and_update ($self);
-}
-
-sub _decide_resolution_and_update {
-  my ($self) = @_;
-  $self->{'decided_resolution'}
-    = $self->get('resolution')
-      || (strftime_is_seconds($self->{'format'}) ? 1 : 60);
-  if (DEBUG) {
-    print "decided resolution ",$self->{'decided_resolution'},"\n";
+  if ($pname eq 'timezone') {
+    if (Scalar::Util::blessed($newval)
+        && $newval->isa('DateTime::Newval')) {
+      require DateTime;
+    } elsif (defined $newval && $newval ne '') {
+      require Tie::TZ;
+    }
   }
-  _stop_timer ($self);
-  _timer_callback (\$self);
-}
 
-sub _stop_timer {
-  my ($self) = @_;
-  if (my $id = delete $self->{'timer_id'}) {
-    if (DEBUG) { print "stop timer $id\n"; }
-    Glib::Source->remove ($id);
+  if ($pname eq 'resolution' || $pname eq 'format') {
+    $self->{'decided_resolution'}
+      = $self->get('resolution')
+        || ($self->strftime_is_seconds($self->{'format'}) ? 1 : 60);
+    ### decided resolution: $self->{'decided_resolution'}
+  }
+  if ($pname eq 'timezone' || $pname eq 'format') {
+    _update ($self);
   }
 }
 
 sub _timer_callback {
   my ($ref_weak_self) = @_;
-  # probably FINALIZE_INSTANCE should run before zapped by weakening, but in
-  # any case if called after weakened then stop the timer
+  ### _timer_callback()
   my $self = $$ref_weak_self || return 0; # Glib::SOURCE_REMOVE
-  if (DEBUG) { print "$self run timer ", $self->{'timer_id'}||'undef', "\n"; }
 
-  my $tod = Time::HiRes::gettimeofday();
+  _update ($self);
+
+  # this timer should be removed by SourceIds anyway
+  return 0; # Glib::SOURCE_REMOVE
+}
+
+# set the label string and start or restart timer
+sub _update {
+  my ($self) = @_;
+  ### Clock _update()
+
+  my $tod = Time::HiRes::time();
   my $format   = $self->{'format'};
   my $timezone = $self->{'timezone'};
-  my $str;
 
+  my ($str, $minute, $second);
   if (Scalar::Util::blessed($timezone)
       && $timezone->isa('DateTime::TimeZone')) {
-    require DateTime;
     my $t = DateTime->from_epoch (epoch => $tod, time_zone => $timezone);
     $str = $t->strftime ($format);
-
-  } elsif (defined $timezone && $timezone ne '') {
-    # in the given TZ timezone string
-    require Tie::TZ;
-    local $Tie::TZ::TZ = $timezone;
-    $str = POSIX::Wide::strftime ($format, localtime ($tod));
-
+    $minute = $t->minute;
+    $second = $t->second;
   } else {
-    # in the current timezone
-    $str = POSIX::Wide::strftime ($format, localtime ($tod));
+    my @tm;
+    if (defined $timezone && $timezone ne '') {
+      # in the given TZ timezone string
+      no warnings 'once';
+      local $Tie::TZ::TZ = $timezone;
+      @tm = localtime ($tod);
+      $str = POSIX::Wide::strftime ($format, @tm);
+    } else {
+      # in the current timezone
+      @tm = localtime ($tod);
+      $str = POSIX::Wide::strftime ($format, @tm);
+    }
+    $minute = $tm[1];
+    $second = $tm[0];
   }
   $self->set_label ($str);
 
-  # Decide how long, in milliseconds, from $tod to the next multiple of
-  # $self->{'decided_resolution'} seconds, either the next 1 second or
-  # 1 minute boundary.  Plus the $timer_margin described above.
+  # Decide how long in milliseconds until the next update.  This is from the
+  # current $minute,$second,frac($tod) to the next multiple of
+  # $self->{'decided_resolution'} seconds, plus _TIMER_MARGIN_MILLISECONDS
+  # described above.
   #
-  my $resolution = $self->{'decided_resolution'};
-  my $milliseconds
-    = POSIX::ceil ($timer_margin
-                   + 1000 * ($resolution - POSIX::fmod ($tod, $resolution)));
-  my $weak_self = $self;
-  Scalar::Util::weaken ($weak_self);
-  $self->{'timer_id'} = Glib::Timeout->add
-    ($milliseconds, \&_timer_callback, \$weak_self, Gtk2::GDK_PRIORITY_REDRAW);
+  # If $self->{'decided_resolution'} is 1 second then $minute,$second have
+  # no effect and it's just from the fractional part of $tod to the next 1
+  # second.  Similarly if $self->{'decided_resolution'} is 60 seconds then
+  # $minute has no effect.
+  #
+  # Rumour has it $second can be 60 for some oddity like a TAI system clock
+  # displaying UTC.  Dunno if it really happens, but cap at 59 just in case.
+  #
+  # In theory an mktime of $second+1, or $minute+1,$second=0, would be the
+  # $tod value to target.  Not absolutely certain that would come out right
+  # if crossing a daylight savings boundary, though capping it modulo the
+  # resolution like ($newtod - $tod) % $self->{'decided_resolution'} would
+  # ensure a sensible range.  Would an mktime be worthwhile?  Taking just
+  # 60*$minute+$second is a little less work.
+  #
+  my $milliseconds = POSIX::ceil
+    (_TIMER_MARGIN_MILLISECONDS
+     + (1000
+        * ($self->{'decided_resolution'}
+           - ((60*$minute + min(59,$second)) % $self->{'decided_resolution'})
+           - ($tod - POSIX::floor($tod))))); # fraction part
 
-  if (DEBUG) {
-    print "start timer ",$self->{'timer_id'},
-      ", ${milliseconds}ms from $tod, to give ",
-        $tod + $milliseconds / 1000.0,"\n";
-  }
-  return 0; # Glib::SOURCE_REMOVE # the previous timer
+  ### timer: "$tod is $minute,$second wait $milliseconds to give ".($tod + $milliseconds / 1000.0)
+  Scalar::Util::weaken (my $weak_self = $self);
+  $self->{'timer'} = Glib::Ex::SourceIds->new
+    (Glib::Timeout->add ($milliseconds,
+                         \&_timer_callback, \$weak_self,
+                         Gtk2::GDK_PRIORITY_REDRAW() - 1));  # before redraws
+
 }
+
+
+#------------------------------------------------------------------------------
 
 # $format is an strftime() format string.  Return true if it has 1 second
 # resolution.
 #
 sub strftime_is_seconds {
-  my ($format) = @_;
+  my ($self, $format) = @_;
+
   # %c is ctime() style, includes seconds
   # %r is "%I:%M:%S %p"
   # %s is seconds since 1970 (a GNU extension)
@@ -179,16 +212,29 @@ sub strftime_is_seconds {
   # modifiers standard E and O, plus GNU "-_0^"
   #
   # DateTime extras:
-  # %N is nanoseconds, which really can't work, so ignore
+  #   %N is nanoseconds, which really can't work, so ignore
   #
+  # DateTime methods:
+  #   second()
+  #   sec()
+  #   hms(), time()
+  #   datetime(), is8601()
+  #   epoch()
+  #   utc_rd_as_seconds()
+  #
+  #   jd(), mjd() fractional part represents the time, but the decimals
+  #   aren't a whole second so won't really display properly, ignore for now
+  #   
   $format =~ s/%%//g; # literal "%"s, so eg. "%%Something" is not "%S"
   return ($format =~ /%[-_^0-9EO]*
                        ([crsSTX]
-                       |\{(sec(ond)?|hms|(date)?time|iso8601|epoch)})/x);
+                       |\{(sec(ond)?|hms|(date)?time|iso8601|epoch|utc_rd_as_seconds)})/x);
 }
 
 1;
 __END__
+
+=for stopwords Pango realtime menubar multi undef TZ startup DateTime unicode charset resizes NoShrink zoneinfo Gtk2-Ex-Clock Ryde
 
 =head1 NAME
 
@@ -227,8 +273,10 @@ font effects.
 C<Gtk2::Ex::Clock> is designed to be light weight and suitable for use
 somewhere unobtrusive in a realtime or semi-realtime application.  The
 right-hand end of a menubar is a good place for instance, depending on user
-preferences.  In the default minutes display all it costs the program is a
-timer waking once a minute to change a C<Gtk2::Label>.
+preferences.
+
+In the default minutes display all a Clock costs in the program is a timer
+waking once a minute to change a C<Gtk2::Label>.
 
 =head1 FUNCTIONS
 
@@ -282,9 +330,9 @@ format the time (and restored so other parts of the program are not
 affected).  See the C<tzset> man page or the GNU C Library manual under "TZ
 Variable" for possible settings.
 
-For a C<DateTime::TimeZone> object its information and a C<DateTime> object
-C<strftime> is used for the display.  The C<strftime> method may have extra
-conversions over what the C library offers.
+For a C<DateTime::TimeZone> object its offsets and a C<DateTime> object
+C<strftime> is used for the display.  The C<strftime> method may have more
+conversions than what the C library offers.
 
 =item C<resolution> (integer, default from format)
 
@@ -295,8 +343,8 @@ recognised as seconds, as are C<DateTime> methods like C<%{iso8601}>.
 Anything else is minutes.  If that comes out wrong you can force it by
 setting this property.
 
-Incidentally, if you're only displaying hours then you probably don't want
-hour resolution, since a system time change won't be recognised until the
+Incidentally, if you're only displaying hours then you don't want hour
+resolution since a system time change won't be recognised until the
 requested resolution worth of real time has elapsed.
 
 =back
@@ -318,31 +366,42 @@ Generally you must make a call to set C<DefaultLocale> yourself at some
 point early in the program.
 
 The C<format> string can include wide-char unicode in Perl's usual fashion,
-for both C<POSIX::strftime> and C<DateTime>.
+for both plain C<strftime> and C<DateTime>.  The plain C<strftime> uses
+C<POSIX::Wide::strftime()> so characters in the format are not limited to
+what's available in the locale charset.
 
-=head1 IMPLEMENATION
+=head1 IMPLEMENTATION
 
 The clock is implemented by updating a C<Gtk2::Label> under a timer.  This
 is simple, and makes good use of the label widget's text drawing code, but
 it does mean that in a variable-width font the size of the widget can change
-as the time changes.  For minutes display any resizes are hardly noticable,
+as the time changes.  For minutes display any resizes are hardly noticeable,
 but for seconds it may be best to have a fixed-width font, or to
 C<set_size_request> a fixed size (initial size plus a few pixels say), or
 even try a NoShrink (see L<Gtk2::Ex::NoShrink>).
 
 The way C<TZ> is temporarily changed to implement a non-local timezone could
-be slightly on the slow side.  The GNU C Library (as of version 2.7) for
+be slightly on the slow side.  The GNU C Library (as of version 2.10) for
 instance opens and re-reads a zoneinfo file on each change.  Doing that
 twice (to the new and back to the old) each minute is fine, but for seconds
 you may prefer C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread
 safe either, though rumour has it you have to be extremely careful with
-threads and Gtk2-Perl anyway, so you probably won't be using threads.  Again
-you can use a C<DateTime::TimeZone> object if you're nervous.
+threads and Gtk2-Perl anyway.  Again you can use a C<DateTime::TimeZone>
+object if nervous.
+
+The display is designed for a resolution no faster than 1 second, so the
+DateTime C<%N> format format for nanoseconds is fairly useless.  It ends up
+displaying a value some 20 to 30 milliseconds past the 1 second boundary
+because that's when the clock updates.  A faster time display is of course
+possible, capped by some frame rate and the speed of the X server, but would
+more likely be something more like a stopwatch than time of day.
+Incidentally C<Gtk2::Label> as used in the Clock here isn't a particularly
+efficient base for rapid updates.
 
 =head1 SEE ALSO
 
 C<strftime(3)>, C<tzset(3)>, L<Gtk2>, L<Gtk2::Label>, L<Gtk2::Misc>,
-L<DateTime::TimeZone>, L<DateTime>
+L<DateTime::TimeZone>, L<DateTime>, L<POSIX::Wide>
 
 =head1 HOME PAGE
 

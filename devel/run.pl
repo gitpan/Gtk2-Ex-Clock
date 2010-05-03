@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2008, 2009, 2010 Kevin Ryde
 
@@ -25,6 +25,7 @@ use POSIX qw(setlocale LC_ALL LC_TIME);
 use DateTime;
 use DateTime::TimeZone;
 
+
 {
   $ENV{'LANG'} = 'en_IN.UTF8';
   $ENV{'LANG'} = 'ar_IN';
@@ -45,47 +46,67 @@ $toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
 my $vbox = Gtk2::VBox->new;
 $toplevel->add ($vbox);
 
+# {
+#   require DateTime::TimeZone::TAI;
+#   my $tz = DateTime::TimeZone::TAI->new;
+#   my $clock = Gtk2::Ex::Clock->new (format => "DateTime TAI:  %a %I:%M",
+#                                     timezone => $tz);
+#   $vbox->pack_start ($clock, 1,1,0);
+# 
+#   my $tod = time();
+#   my $t = DateTime->from_epoch (epoch => $tod, time_zone => $tz);
+#   print $t->strftime("TAI %H:%M:%S"), "\n";
+#   print POSIX::strftime("GMT %H:%M:%S",gmtime($tod)), "\n";
+# }
 {
-  # wide chars crunched through strftime
-  my $clock = Gtk2::Ex::Clock->new (format => "TZ GMT:  \x{263A} %a %I:%M%P",
-                                    timezone => 'GMT');
-  $vbox->pack_start ($clock, 1,1,0);
-}
-{
-  my $tz = DateTime::TimeZone->new (name => 'GMT');
-  my $clock = Gtk2::Ex::Clock->new (format => "DateTime GMT:  \x{263A} %a %I:%M%P",
+  require DateTime::TimeZone::TAI;
+  my $tz = DateTime::TimeZone::TAI->new;
+  my $clock = Gtk2::Ex::Clock->new (format => "DateTime TAI %a %H:%M:%S.%N",
                                     timezone => $tz);
+  $clock->signal_connect (notify => sub { print "update ...\n" });
   $vbox->pack_start ($clock, 1,1,0);
 }
-{
-  my $tz = DateTime::TimeZone->new (name => 'local');
-  my $clock = Gtk2::Ex::Clock->new (format => "DateTime Local:  \x{263A} %a %I:%M%P",
-                                    timezone => $tz);
-  $vbox->pack_start ($clock, 1,1,0);
-}
-{
-  my @methods = ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
-                 'epoch');
-  my $tz = DateTime::TimeZone->new (name => 'GMT');
-  foreach my $method (@methods) {
-    my $clock = Gtk2::Ex::Clock->new (format => "DateTime::$method %{$method}",
-                                      timezone => $tz);
-    $vbox->pack_start ($clock, 1,1,0);
-  }
-}
-{
-  my $clock = Gtk2::Ex::Clock->new (format => "TZ %%s epoch: %s");
-  $vbox->pack_start ($clock, 1,1,0);
-}
-{
-  my $clock = Gtk2::Ex::Clock->new (format => "TZ Bad Zone: %H:%M:%S",
-                                    timezone => 'Some Bogosity');
-  $vbox->pack_start ($clock, 1,1,0);
-}
-{
-  my $clock = Gtk2::Ex::Clock->new (format => "TZ Bad Format: %! %%");
-  $vbox->pack_start ($clock, 1,1,0);
-}
+# {
+#   # wide chars crunched through strftime
+#   my $clock = Gtk2::Ex::Clock->new (format => "TZ GMT:  \x{263A} %a %I:%M%P",
+#                                     timezone => 'GMT');
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
+# {
+#   my $tz = DateTime::TimeZone->new (name => 'GMT');
+#   my $clock = Gtk2::Ex::Clock->new (format => "DateTime GMT:  \x{263A} %a %I:%M%P",
+#                                     timezone => $tz);
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
+# {
+#   my $tz = DateTime::TimeZone->new (name => 'local');
+#   my $clock = Gtk2::Ex::Clock->new (format => "DateTime Local:  \x{263A} %a %I:%M%P",
+#                                     timezone => $tz);
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
+# {
+#   my @methods = ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
+#                  'epoch');
+#   my $tz = DateTime::TimeZone->new (name => 'GMT');
+#   foreach my $method (@methods) {
+#     my $clock = Gtk2::Ex::Clock->new (format => "DateTime::$method %{$method}",
+#                                       timezone => $tz);
+#     $vbox->pack_start ($clock, 1,1,0);
+#   }
+# }
+# {
+#   my $clock = Gtk2::Ex::Clock->new (format => "TZ %%s epoch: %s");
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
+# {
+#   my $clock = Gtk2::Ex::Clock->new (format => "TZ Bad Zone: %H:%M:%S",
+#                                     timezone => 'Some Bogosity');
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
+# {
+#   my $clock = Gtk2::Ex::Clock->new (format => "TZ Bad Format: %! %%");
+#   $vbox->pack_start ($clock, 1,1,0);
+# }
 
 
 $toplevel->show_all;

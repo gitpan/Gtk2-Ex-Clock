@@ -20,10 +20,12 @@
 use 5.008;
 use strict;
 use warnings;
-use Test::More tests => 30;
+use Test::More tests => 31;
 
-BEGIN { SKIP: { eval 'use Test::NoWarnings; 1'
-                  or skip 'Test::NoWarnings not available', 1; } }
+BEGIN {
+ SKIP: { eval 'use Test::NoWarnings; 1'
+           or skip 'Test::NoWarnings not available', 1; }
+}
 
 use lib 't';
 use MyTestHelpers;
@@ -31,7 +33,7 @@ use MyTestHelpers;
 require Gtk2::Ex::Clock;
 
 {
-  my $want_version = 11;
+  my $want_version = 12;
   is ($Gtk2::Ex::Clock::VERSION, $want_version, 'VERSION variable');
   is (Gtk2::Ex::Clock->VERSION,  $want_version, 'VERSION class method');
 
@@ -66,27 +68,27 @@ if (POSIX->can('_SC_CLK_TCK')) {
 #-----------------------------------------------------------------------------
 # strftime_is_seconds()
 
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%c"),    "%c");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("x %r y"),"x %r y");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%s"),    "%s");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%X"),    "%X");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%6s"),   "%6s");
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%6dS"),  "%6dS");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%S"),    "%S");
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%H:%M"), "%H:%M");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%ES"),   "%ES");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%OS"),   "%OS");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%0S"),   "%0S");
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%MS"),   "%MS");
-ok (  Gtk2::Ex::Clock::strftime_is_seconds("%-12S"), "%-12S");
-ok (! Gtk2::Ex::Clock::strftime_is_seconds("%%Something %H:%M"),
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%c"),    "%c");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("x %r y"),"x %r y");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%s"),    "%s");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%X"),    "%X");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%6s"),   "%6s");
+ok (! Gtk2::Ex::Clock->strftime_is_seconds("%6dS"),  "%6dS");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%S"),    "%S");
+ok (! Gtk2::Ex::Clock->strftime_is_seconds("%H:%M"), "%H:%M");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%ES"),   "%ES");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%OS"),   "%OS");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%0S"),   "%0S");
+ok (! Gtk2::Ex::Clock->strftime_is_seconds("%MS"),   "%MS");
+ok (  Gtk2::Ex::Clock->strftime_is_seconds("%-12S"), "%-12S");
+ok (! Gtk2::Ex::Clock->strftime_is_seconds("%%Something %H:%M"),
     "%%Something %H:%M");
 
 # DateTime method forms
 foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
-                    'epoch') {
+                    'epoch', 'utc_rd_as_seconds') {
   my $format = "blah %{$method} blah";
-  ok (Gtk2::Ex::Clock::strftime_is_seconds($format), $format);
+  ok (Gtk2::Ex::Clock->strftime_is_seconds($format), $format);
 }
 
 #-----------------------------------------------------------------------------

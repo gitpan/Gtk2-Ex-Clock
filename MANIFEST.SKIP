@@ -95,10 +95,15 @@
 devel/h2xs/TestConstFoo/
 
 # special case mall executables
-devel/hblk
-devel/mallopt
-devel/mallstats
-devel/malltrim
+^devel/hblk$
+^devel/mallopt$
+^devel/mallstats$
+^devel/malltrim$
+# special case fli executables
+^devel/mmap-multi$
+# special case widget-bits executables
+^devel/grandom$
+^devel/grandom-[a-z]+$
 
 # special htmlext environs
 ^test-dist/
