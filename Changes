@@ -17,6 +17,9 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+Version 13, September 2010
+    - new "timezone-string" property
+
 Version 12, May 2010
     - for minute resolution allow minutes not on a time() % 60
       boundary, as happens for DateTime::TimeZone::TAI and similar

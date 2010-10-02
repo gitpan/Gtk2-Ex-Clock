@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
@@ -20,20 +20,16 @@
 use 5.008;
 use strict;
 use warnings;
-use Test::More tests => 31;
-
-BEGIN {
- SKIP: { eval 'use Test::NoWarnings; 1'
-           or skip 'Test::NoWarnings not available', 1; }
-}
+use Test::More tests => 39;
 
 use lib 't';
 use MyTestHelpers;
+BEGIN { MyTestHelpers::nowarnings() }
 
 require Gtk2::Ex::Clock;
 
 {
-  my $want_version = 12;
+  my $want_version = 13;
   is ($Gtk2::Ex::Clock::VERSION, $want_version, 'VERSION variable');
   is (Gtk2::Ex::Clock->VERSION,  $want_version, 'VERSION class method');
 
@@ -89,6 +85,26 @@ foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
                     'epoch', 'utc_rd_as_seconds') {
   my $format = "blah %{$method} blah";
   ok (Gtk2::Ex::Clock->strftime_is_seconds($format), $format);
+}
+
+#-----------------------------------------------------------------------------
+# timezone / timezone-string aliasing
+
+{
+  my $clock = Gtk2::Ex::Clock->new (timezone_string => 'ABC');
+  is ($clock->get('timezone'), 'ABC');
+  is ($clock->get('timezone-string'), 'ABC');
+  is ($clock->get('timezone_string'), 'ABC');
+
+  $clock->set('timezone-string', 'DEF');
+  is ($clock->get('timezone'), 'DEF');
+  is ($clock->get('timezone-string'), 'DEF');
+  is ($clock->get('timezone_string'), 'DEF');
+
+  $clock->set('timezone', 'GHI');
+  is ($clock->get('timezone'), 'GHI');
+  is ($clock->get('timezone-string'), 'GHI');
+  is ($clock->get('timezone_string'), 'GHI');
 }
 
 #-----------------------------------------------------------------------------

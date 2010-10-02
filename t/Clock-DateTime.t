@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright 2007, 2008, 2010 Kevin Ryde
+# Copyright 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -17,23 +17,31 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
-
-# Two-line clock display.
-
-
+use 5.008;
 use strict;
 use warnings;
-use Gtk2 '-init';
-use Gtk2::Ex::Clock;
+use Test::More;
 
-my $toplevel = Gtk2::Window->new('toplevel');
-$toplevel->signal_connect (destroy => sub { Gtk2->main_quit; });
+use lib 't';
+use MyTestHelpers;
+BEGIN { MyTestHelpers::nowarnings() }
 
-my $clock = Gtk2::Ex::Clock->new (format  => "%d %b\n%H:%M",
-                                  justify => 'center',
-                                  xalign  => 0.5);
-$toplevel->add ($clock);
+eval { require DateTime::TimeZone }
+  or plan skip_all => "due to DateTime::TimeZone not available -- $@";
 
-$toplevel->show_all;
-Gtk2->main;
+plan tests => 2;
+
+require Gtk2::Ex::Clock;
+MyTestHelpers::glib_gtk_versions();
+
+#-----------------------------------------------------------------------------
+# timezone / timezone-string aliasing
+
+{
+  my $dtz = DateTime::TimeZone->new (name => 'UTC');
+  my $clock = Gtk2::Ex::Clock->new (timezone => $dtz);
+  is ($clock->get('timezone-string'), 'UTC');
+  is ($clock->get('timezone'), $dtz);
+}
+
 exit 0;

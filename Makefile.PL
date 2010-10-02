@@ -39,6 +39,7 @@ MyMakeMakerExtras::WriteMakefile
                     # gratuitous, but you'll almost certainly it for various
                     # bug fixes too)
                     'Gtk2' => '1.200',
+
                     'Glib::Object::Subclass' => 0,
 
                     'Glib::Ex::SourceIds' => 2,  # ObjectBits v.2

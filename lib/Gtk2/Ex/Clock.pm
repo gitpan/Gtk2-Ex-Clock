@@ -30,7 +30,7 @@ use Glib::Ex::SourceIds;
 # uncomment this to run the ### lines
 #use Smart::Comments;
 
-our $VERSION = 12;
+our $VERSION = 13;
 
 use constant _DEFAULT_FORMAT => '%H:%M';
 
@@ -43,6 +43,15 @@ use Glib::Object::Subclass
                   _DEFAULT_FORMAT,
                   Glib::G_PARAM_READWRITE),
 
+                 Glib::ParamSpec->string
+                 ('timezone-string',
+                  'timezone-string',
+                  'The timezone to use in the display, as a string for the TZ environment variable.  An empty string or undef means the local timezone.',
+                  # FIXME: actual default is undef, pending Glib 1.240 to
+                  # for Glib::ParamSpec->string() to accept that
+                  '', # default
+                  Glib::G_PARAM_READWRITE),
+
                  Glib::ParamSpec->scalar
                  ('timezone',
                   'timezone',
@@ -53,7 +62,9 @@ use Glib::Object::Subclass
                  ('resolution',
                   'resolution',
                   'The resolution of the clock, in seconds, or 0 to decide this from the format string.',
-                  0, 3600, 0,
+                  0,     # min
+                  3600,  # max
+                  0,     # default
                   Glib::G_PARAM_READWRITE),
                 ];
 
@@ -82,20 +93,42 @@ use constant _TIMER_MARGIN_MILLISECONDS => do {
 sub INIT_INSTANCE {
   my ($self) = @_;
   $self->{'format'} = _DEFAULT_FORMAT;
+  $self->{'resolution'} = 0; # per pspec default
   $self->{'decided_resolution'} = 60; # of _DEFAULT_FORMAT
   $self->set_use_markup (1);
   _update($self);  # initial string for initial size
 }
 
+sub GET_PROPERTY {
+  my ($self, $pspec) = @_;
+  my $pname = $pspec->get_name;
+
+  if ($pname eq 'timezone_string') {
+    my $timezone = $self->{'timezone'};
+    # For DateTime::TimeZone read back the ->name() string.
+    # Not yet documented.  Is this a good idea?
+    if (Scalar::Util::blessed ($timezone)) {
+      $timezone = $timezone->name;
+    }
+    return $timezone;
+  }
+
+  return $self->{$pname};
+}
+
 sub SET_PROPERTY {
   my ($self, $pspec, $newval) = @_;
+  ### Clock SET_PROPERTY: $pspec->get_name
+
   my $pname = $pspec->get_name;
-  ### Clock SET_PROPERTY: $pname
+  if ($pname eq 'timezone_string') {  # alias
+    $pname = 'timezone';
+  }
   $self->{$pname} = $newval;  # per default GET_PROPERTY
 
   if ($pname eq 'timezone') {
     if (Scalar::Util::blessed($newval)
-        && $newval->isa('DateTime::Newval')) {
+        && $newval->isa('DateTime::TimeZone')) {
       require DateTime;
     } elsif (defined $newval && $newval ne '') {
       require Tie::TZ;
@@ -143,13 +176,13 @@ sub _update {
   } else {
     my @tm;
     if (defined $timezone && $timezone ne '') {
-      # in the given TZ timezone string
+      ### using TZ: $timezone
       no warnings 'once';
       local $Tie::TZ::TZ = $timezone;
       @tm = localtime ($tod);
       $str = POSIX::Wide::strftime ($format, @tm);
     } else {
-      # in the current timezone
+      ### using current timezone
       @tm = localtime ($tod);
       $str = POSIX::Wide::strftime ($format, @tm);
     }
@@ -320,19 +353,25 @@ properties can control centring.  For example,
                                       justify => 'center',
                                       xalign  => 0.5);
 
-=item C<timezone> (string or C<DateTime::TimeZone>, default local time)
+=item C<timezone> (scalar string or C<DateTime::TimeZone>, default local time)
+
+=item C<timezone-string> (string)
 
 The timezone to use in the display.  An empty string or undef (the default)
 means local time.
 
-For a string, the C<TZ> environment variable (C<$ENV{'TZ'}>) is set to
-format the time (and restored so other parts of the program are not
-affected).  See the C<tzset> man page or the GNU C Library manual under "TZ
-Variable" for possible settings.
+For a string, the C<TZ> environment variable C<$ENV{'TZ'}> is set to format
+the time, and restored so other parts of the program are not affected.  See
+the C<tzset> man page or the GNU C Library manual under "TZ Variable" for
+possible settings.
 
-For a C<DateTime::TimeZone> object its offsets and a C<DateTime> object
-C<strftime> is used for the display.  The C<strftime> method may have more
-conversions than what the C library offers.
+For a C<DateTime::TimeZone> object the offsets in it and a C<DateTime>
+object's C<< $dt->strftime >> are used for the display.  That C<strftime>
+method may have more conversions than what the C library offers.
+
+The C<timezone> and C<timezone-string> properties act on the same underlying
+setting.  C<timezone-string> is a plain string type and allows TZ strings to
+be set from C<Gtk2::Builder>.
 
 =item C<resolution> (integer, default from format)
 
@@ -373,9 +412,9 @@ what's available in the locale charset.
 =head1 IMPLEMENTATION
 
 The clock is implemented by updating a C<Gtk2::Label> under a timer.  This
-is simple, and makes good use of the label widget's text drawing code, but
-it does mean that in a variable-width font the size of the widget can change
-as the time changes.  For minutes display any resizes are hardly noticeable,
+is simple and makes good use of the label widget's text drawing code, but it
+does mean that in a variable-width font the size of the widget can change as
+the time changes.  For minutes display any resizes are hardly noticeable,
 but for seconds it may be best to have a fixed-width font, or to
 C<set_size_request> a fixed size (initial size plus a few pixels say), or
 even try a NoShrink (see L<Gtk2::Ex::NoShrink>).
@@ -388,6 +427,12 @@ you may prefer C<DateTime::TimeZone>.  Changing C<TZ> probably isn't thread
 safe either, though rumour has it you have to be extremely careful with
 threads and Gtk2-Perl anyway.  Again you can use a C<DateTime::TimeZone>
 object if nervous.
+
+Any code making localized changes to C<TZ> should be careful not to run the
+main loop with the change in force.  Doing so is probably a bad idea for
+many reasons, but in particular if a clock widget showing the default local
+time could update to the different C<TZ>.  Things like C<< $dialog->run >>
+iterate the main loop.
 
 The display is designed for a resolution no faster than 1 second, so the
 DateTime C<%N> format format for nanoseconds is fairly useless.  It ends up

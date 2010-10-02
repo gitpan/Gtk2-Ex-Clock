@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.63.
+signed via the Module::Signature module, version 0.66.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -15,52 +15,55 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 842745cb706f8f2126506f544492f7a80dbe29b3 COPYING
-SHA1 ac89074afaf6cd0f16953b5857671232cfa45480 Changes
-SHA1 90a8c5ca9250261cff68578978861bafdd65cd1e MANIFEST
-SHA1 00e97fa7664a1ea29a3be5b0b2ec2b0076e002f1 MANIFEST.SKIP
-SHA1 f28592a913d9afed4040ff0143d01cf02f7d0e8b META.yml
-SHA1 4ff574c85502fc7b24345336c82e78e8348e6950 Makefile.PL
+SHA1 53f442d1991eae69548becda5b9ea4a76ae6e7db Changes
+SHA1 36f842a8c0d0976cab60659e360b135ece21be74 MANIFEST
+SHA1 e6e7c2904ea5d300c0ddf70fc5a80f5005229aa9 MANIFEST.SKIP
+SHA1 f1c06375a381b1318aef45f74fbbd38267756af7 META.yml
+SHA1 e7d213c5db657f8854b74bddc7eba146aad651f9 Makefile.PL
 SHA1 519fccc46e7971bd07ea47c271f29dbf808b0291 README
-SHA1 12b4f5d04288a4ea94d951e7456a46881a773daf debian/changelog
+SHA1 11666aed00c3223c68bc7e200b677b0aee294e3e debian/changelog
 SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
-SHA1 140e2148ece6a690705a8c1fe9887b572deebacf debian/control
+SHA1 336f3c170eec5141c0f1b9442d0aaa2a166cfa25 debian/control
 SHA1 6c4b06818e7ffae2924174a33c8329f7919aa804 debian/copyright
 SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 debian/patches/pod-examples-dir.diff
 SHA1 1ab1bf681949780557dbebf5eaf721a02d9348f1 debian/rules
 SHA1 61652cd1568dcf2614df833eba241755eee34e89 debian/source/format
 SHA1 140473013a3d757b2a8ca0dd48b2b2a9033d0073 debian/watch
-SHA1 5c3c8afc3630335e07ca2bf9631d1aa0f51ddb7e devel/cldr.pl
+SHA1 e1db0c9952d0ec9a13d5378ae70bdeca4cb60240 devel/cldr.pl
 SHA1 75340f8e677c3fad4c43e81befc730198cca6dd1 devel/run-one.pl
 SHA1 6f16edc7367d1dc2a31ad4f7e7c0b060f957332c devel/run.pl
-SHA1 2c3c3ca44b842bd85f0672eccce7980b6757cb74 devel/screenshot.pl
-SHA1 ab8822d46c2b7f02a9125b33c628da5ac2ddf848 devel/strftime.pl
-SHA1 8abc75f131f8ac3817180d05e3d52ea831827597 devel/tai.pl
-SHA1 6fbfb9fec56d0cbaabe354dd86cc441bfd57c25d devel/time-mock.pl
+SHA1 5efd1a92a63aeeddb13454483a21865254481da8 devel/screenshot.pl
+SHA1 b7ed41a8b79219e8eaefbb10b4c3ef7093e811c7 devel/strftime.pl
+SHA1 3fb7650e1c99c4055b1281b2a90adb52fd70cb59 devel/tai.pl
+SHA1 bdb5234013aec7b11584f692c0c73f6bea2f95c9 devel/time-mock.pl
 SHA1 81c797a2847dc628f826c413697331d378ecbcda devel/unmapped.pl
-SHA1 d66e475c6a86fb4f8fbfcc7eb2b70256f1d8dbd5 examples/builder.pl
-SHA1 0464cfb7fcc3ff3b0780e8715e9c46478075dbd3 examples/datetime.pl
-SHA1 8a2cb0c5836c0656d719b63c2f5aac1700ea1e0f examples/gtk2-ex-clock.pl
-SHA1 8934fa93aa21af3871c391dcb41e5ac36e17fe43 examples/simple.pl
-SHA1 bd6fc830f158a940090f792195891666ee33d0e3 examples/standalone.pl
-SHA1 84fe93b73252b24c675fd14c573cddda4ef4340b examples/tai.pl
-SHA1 f817384581376f02fda6261cf44f1b30f14b03fb examples/twoline.pl
-SHA1 8dbc55a8c747c4d432973c2f8ebfd435b18baabe examples/world-aatw.pl
-SHA1 7e0fca7caaa76f74b1403add8c6d54cf57fc71c1 examples/world.pl
-SHA1 0c1b90a4a43fd503eaf53fad2056da1d04468e16 inc/MyMakeMakerExtras.pm
-SHA1 63427b66eb26f013f10c835b0cf320c93361f310 inc/my_pod2html
-SHA1 f69055485af61c89c29cfa3311cfb764feded572 lib/Gtk2/Ex/Clock.pm
-SHA1 d5d5c83c83918d8c97ca79e92ea840cdf277f01f t/0-META-read.t
-SHA1 37abd43b41068804ea4bb099fdd89af21be82926 t/0-Test-DistManifest.t
-SHA1 8f93fb4c8f0424a4442cc93c9a2e86342ef55281 t/0-Test-Pod.t
-SHA1 fb517c2fae5ddac559318bf6a224949115ea3129 t/0-Test-YAML-Meta.t
-SHA1 fb5339b5215512b32558cb339f3394d6781c439a t/Clock-display.t
-SHA1 5ec875875ae7732934186d54fbce3a99b7892dc6 t/Clock-weaken.t
-SHA1 ced1eff1b020f27d107010af6bdab317cec20bc1 t/Clock.t
-SHA1 e5b9059d5e27d380fc9418095d773ad5f96baa06 t/MyTestHelpers.pm
+SHA1 ee01a0576116a9b8276c29a5c15fa45b8f02d187 examples/builder.pl
+SHA1 38a9a659d5b3157ce392f888355c35c51a45fcc7 examples/datetime.pl
+SHA1 ce079a35f5ee63322dd030fbb4736f3fa97f44f5 examples/gtk2-ex-clock.pl
+SHA1 cdd051d5a4b2937f21967ba64ab027f1e2008142 examples/simple.pl
+SHA1 3eaf84ff8bd243efe4532a6c46b3daac815ba38e examples/standalone.pl
+SHA1 f8c0448f717b28dba5aa893b4e6a0043bded4331 examples/tai.pl
+SHA1 ee166425f459590aa662f053a97e5ab330c7d8ff examples/twoline.pl
+SHA1 0e87d2b6fa447166b452763716da281d33fb82c0 examples/world-aatw.pl
+SHA1 252130316ed373b816705180447f477af715ec49 examples/world.pl
+SHA1 3cf3345a9177dbe362dfc8fbf192272f4a611ca8 inc/MyMakeMakerExtras.pm
+SHA1 692a1ddc2ca6b98cac7b48ea40bc1ac1509e8ed9 inc/my_pod2html
+SHA1 68a5e6369752942db82748b21d0b70dc53ff2b19 lib/Gtk2/Ex/Clock.pm
+SHA1 5a1ba575522253514169e53ae1d945a34ddbeaf0 t/Clock-DateTime.t
+SHA1 84eaf38a15e1eff7267ce0877d38c00c845d6284 t/Clock-display.t
+SHA1 b4357b25563a0c75fbbdb2b7377d32841dd34a58 t/Clock-weaken.t
+SHA1 089fd691b6875c3c161780b7ffe348d03ff22452 t/Clock.t
+SHA1 5e5680b471811244fe93571efc23e7b6089cac3b t/MyTestHelpers.pm
+SHA1 9127f78a0dfa04976acbb979dd7862ef59a74c58 xt/0-META-read.t
+SHA1 37abd43b41068804ea4bb099fdd89af21be82926 xt/0-Test-DistManifest.t
+SHA1 8f93fb4c8f0424a4442cc93c9a2e86342ef55281 xt/0-Test-Pod.t
+SHA1 1de8f07883f6bf1a2ef79f2cb8adf1deb3f61cee xt/0-Test-Synopsis.t
+SHA1 fb517c2fae5ddac559318bf6a224949115ea3129 xt/0-Test-YAML-Meta.t
+SHA1 c84fa2f39a57885c647ebb69a456f3129de706c1 xt/0-exe-shebang.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iD8DBQFL3hvILFMCIV9q3ToRAsfLAJ9mhtIdwbDkfuC1GO5meQhPTouTCgCdH8bm
-+4Tr9tywohGNxNzzedt85o4=
-=L6F/
+iD8DBQFMpoXBLFMCIV9q3ToRAlRFAKCCfYQYknEOs5KlUoFEYf/UZoWlJgCfVwco
+36YadfPUjcAr7egOhahq3vQ=
+=/VL1
 -----END PGP SIGNATURE-----

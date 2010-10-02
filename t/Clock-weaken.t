@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
@@ -24,17 +24,13 @@ use Test::More;
 
 use lib 't';
 use MyTestHelpers;
+BEGIN { MyTestHelpers::nowarnings() }
 
-BEGIN {
-  eval "use Test::Weaken 2.000; 1"
-    or plan skip_all => "due to Test::Weaken 2.000 not available -- $@";
-  diag ("Test::Weaken version ", Test::Weaken->VERSION);
+eval "use Test::Weaken 2.000; 1"
+  or plan skip_all => "due to Test::Weaken 2.000 not available -- $@";
+diag ("Test::Weaken version ", Test::Weaken->VERSION);
 
-  plan tests => 2;
-
- SKIP: { eval 'use Test::NoWarnings; 1'
-           or skip 'Test::NoWarnings not available', 1; }
-}
+plan tests => 1;
 
 {
   my $leaks = Test::Weaken::leaks (sub { return Gtk2::Ex::Clock->new });

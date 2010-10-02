@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright 2009, 2010 Kevin Ryde
 
@@ -24,7 +24,7 @@ use Getopt::Long;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
 
-our $VERSION = 12;
+our $VERSION = 13;
 
 my ($foreground, $background, $geometry, $use_noshrink);
 my %clock_properties;
