@@ -15,13 +15,13 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 842745cb706f8f2126506f544492f7a80dbe29b3 COPYING
-SHA1 53f442d1991eae69548becda5b9ea4a76ae6e7db Changes
+SHA1 7151bffe3ff6edfc10b6e728af95a9c2d65f536b Changes
 SHA1 36f842a8c0d0976cab60659e360b135ece21be74 MANIFEST
 SHA1 e6e7c2904ea5d300c0ddf70fc5a80f5005229aa9 MANIFEST.SKIP
-SHA1 f1c06375a381b1318aef45f74fbbd38267756af7 META.yml
+SHA1 08ad33b842f3ea62eb82017601121572b144a107 META.yml
 SHA1 e7d213c5db657f8854b74bddc7eba146aad651f9 Makefile.PL
 SHA1 519fccc46e7971bd07ea47c271f29dbf808b0291 README
-SHA1 11666aed00c3223c68bc7e200b677b0aee294e3e debian/changelog
+SHA1 89c1e53544d778075d71bf5ba81831cd8304c518 debian/changelog
 SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
 SHA1 336f3c170eec5141c0f1b9442d0aaa2a166cfa25 debian/control
 SHA1 6c4b06818e7ffae2924174a33c8329f7919aa804 debian/copyright
@@ -39,7 +39,7 @@ SHA1 bdb5234013aec7b11584f692c0c73f6bea2f95c9 devel/time-mock.pl
 SHA1 81c797a2847dc628f826c413697331d378ecbcda devel/unmapped.pl
 SHA1 ee01a0576116a9b8276c29a5c15fa45b8f02d187 examples/builder.pl
 SHA1 38a9a659d5b3157ce392f888355c35c51a45fcc7 examples/datetime.pl
-SHA1 ce079a35f5ee63322dd030fbb4736f3fa97f44f5 examples/gtk2-ex-clock.pl
+SHA1 3869ef4d6acb76ab3f21a5878e09389f097f7b09 examples/gtk2-ex-clock.pl
 SHA1 cdd051d5a4b2937f21967ba64ab027f1e2008142 examples/simple.pl
 SHA1 3eaf84ff8bd243efe4532a6c46b3daac815ba38e examples/standalone.pl
 SHA1 f8c0448f717b28dba5aa893b4e6a0043bded4331 examples/tai.pl
@@ -48,11 +48,11 @@ SHA1 0e87d2b6fa447166b452763716da281d33fb82c0 examples/world-aatw.pl
 SHA1 252130316ed373b816705180447f477af715ec49 examples/world.pl
 SHA1 3cf3345a9177dbe362dfc8fbf192272f4a611ca8 inc/MyMakeMakerExtras.pm
 SHA1 692a1ddc2ca6b98cac7b48ea40bc1ac1509e8ed9 inc/my_pod2html
-SHA1 68a5e6369752942db82748b21d0b70dc53ff2b19 lib/Gtk2/Ex/Clock.pm
-SHA1 5a1ba575522253514169e53ae1d945a34ddbeaf0 t/Clock-DateTime.t
+SHA1 7ae861852c4e593b38abf5c703e8cabdb65ca9db lib/Gtk2/Ex/Clock.pm
+SHA1 3546038ffbe232068f5b0f9d8041d460efb4c8a1 t/Clock-DateTime.t
 SHA1 84eaf38a15e1eff7267ce0877d38c00c845d6284 t/Clock-display.t
 SHA1 b4357b25563a0c75fbbdb2b7377d32841dd34a58 t/Clock-weaken.t
-SHA1 089fd691b6875c3c161780b7ffe348d03ff22452 t/Clock.t
+SHA1 cdaa548ec65b0c79ae25a86952fe625e04e4969b t/Clock.t
 SHA1 5e5680b471811244fe93571efc23e7b6089cac3b t/MyTestHelpers.pm
 SHA1 9127f78a0dfa04976acbb979dd7862ef59a74c58 xt/0-META-read.t
 SHA1 37abd43b41068804ea4bb099fdd89af21be82926 xt/0-Test-DistManifest.t
@@ -63,7 +63,7 @@ SHA1 c84fa2f39a57885c647ebb69a456f3129de706c1 xt/0-exe-shebang.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iD8DBQFMpoXBLFMCIV9q3ToRAlRFAKCCfYQYknEOs5KlUoFEYf/UZoWlJgCfVwco
-36YadfPUjcAr7egOhahq3vQ=
-=/VL1
+iD8DBQFMtNMtLFMCIV9q3ToRAi/5AJ9jmUKtZwZmPpVVoMd7Umt3vAsM8gCaAvJO
+tNYpg7mJvY2HI4iZo5vNsWk=
+=KrfZ
 -----END PGP SIGNATURE-----

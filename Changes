@@ -17,6 +17,9 @@ with Gtk2-Ex-Clock.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+Version 14, October 2010
+    - tests check for DateTime as well as DateTime::TimeZone
+
 Version 13, September 2010
     - new "timezone-string" property
 

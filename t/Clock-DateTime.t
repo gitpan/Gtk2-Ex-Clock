@@ -29,10 +29,17 @@ BEGIN { MyTestHelpers::nowarnings() }
 eval { require DateTime::TimeZone }
   or plan skip_all => "due to DateTime::TimeZone not available -- $@";
 
+eval { require DateTime }
+  or plan skip_all => "due to DateTime not available -- $@";
+
 plan tests => 2;
 
 require Gtk2::Ex::Clock;
 MyTestHelpers::glib_gtk_versions();
+
+diag "DateTime version ",DateTime->VERSION;
+diag "DateTime::TimeZone version ",DateTime::TimeZone->VERSION;
+
 
 #-----------------------------------------------------------------------------
 # timezone / timezone-string aliasing
