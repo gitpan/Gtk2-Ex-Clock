@@ -1,4 +1,4 @@
-# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010, 2011 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -30,7 +30,7 @@ use Glib::Ex::SourceIds;
 # uncomment this to run the ### lines
 #use Smart::Comments;
 
-our $VERSION = 14;
+our $VERSION = 15;
 
 use constant _DEFAULT_FORMAT => '%H:%M';
 
@@ -38,29 +38,29 @@ use Glib::Object::Subclass
   'Gtk2::Label',
   properties => [Glib::ParamSpec->string
                  ('format',
-                  'format',
+                  'Format string',
                   'An strftime() format string to display the time.',
                   _DEFAULT_FORMAT,
                   Glib::G_PARAM_READWRITE),
 
-                 Glib::ParamSpec->string
-                 ('timezone-string',
-                  'timezone-string',
-                  'The timezone to use in the display, as a string for the TZ environment variable.  An empty string or undef means the local timezone.',
-                  # FIXME: actual default is undef, pending Glib 1.240 to
-                  # for Glib::ParamSpec->string() to accept that
-                  '', # default
-                  Glib::G_PARAM_READWRITE),
-
                  Glib::ParamSpec->scalar
                  ('timezone',
-                  'timezone',
+                  'Timezone',
                   'The timezone to use in the display, either a string for the TZ environment variable, or a DateTime::TimeZone object.  An empty string or undef means the local timezone.',
+                  Glib::G_PARAM_READWRITE),
+
+                 Glib::ParamSpec->string
+                 ('timezone-string',
+                  'Timezone string',
+                  'The timezone to use in the display, as a string for the TZ environment variable.  An empty string or undef means the local timezone.',
+                   (eval {Glib->VERSION(1.240);1}  
+                    ? undef # default
+                    : ''),  # no undef/NULL before Perl-Glib 1.240
                   Glib::G_PARAM_READWRITE),
 
                  Glib::ParamSpec->int
                  ('resolution',
-                  'resolution',
+                  'Resolution',
                   'The resolution of the clock, in seconds, or 0 to decide this from the format string.',
                   0,     # min
                   3600,  # max
@@ -72,8 +72,8 @@ use Glib::Object::Subclass
 # _TIMER_MARGIN_MILLISECONDS is an extra period in milliseconds to add to
 # the timer period requested.  It's designed to ensure the timer doesn't
 # fire before the target time boundary of 1 second or 1 minute, in case
-# g_timeout_add() or the select() within it ends up rounding to a clock tick
-# boundary.
+# g_timeout_add() or the select() within it ends up rounding down to a clock
+# tick boundary.
 #
 # In the unlikely event there's no sysconf() value for CLK_TCK, or no
 # sysconf() func at all, assume the traditional 100 ticks/second, ie. a
@@ -311,6 +311,17 @@ preferences.
 In the default minutes display all a Clock costs in the program is a timer
 waking once a minute to change a C<Gtk2::Label>.
 
+If you've got a 7-segment LED style font you can display alarm clock style
+by selecting that font in the usual ways from an RC file setting or Pango
+markup.  F<examples/7seg.pl> in the sources does it with Pango markup and
+Harvey Twyman's font.  (Unzip into your F<~/.fonts> directory.)
+
+=over
+
+L<http://www.twyman.org.uk/Fonts/>
+
+=back
+
 =head1 FUNCTIONS
 
 =over 4
@@ -454,7 +465,7 @@ L<http://user42.tuxfamily.org/gtk2-ex-clock/index.html>
 
 =head1 LICENSE
 
-Gtk2-Ex-Clock is Copyright 2007, 2008, 2009, 2010 Kevin Ryde
+Gtk2-Ex-Clock is Copyright 2007, 2008, 2009, 2010, 2011 Kevin Ryde
 
 Gtk2-Ex-Clock is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

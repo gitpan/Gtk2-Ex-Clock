@@ -20,7 +20,7 @@
 use 5.008;
 use strict;
 use warnings;
-use Test::More tests => 39;
+use Test::More tests => 43;
 
 use lib 't';
 use MyTestHelpers;
@@ -29,7 +29,7 @@ BEGIN { MyTestHelpers::nowarnings() }
 require Gtk2::Ex::Clock;
 
 {
-  my $want_version = 14;
+  my $want_version = 15;
   is ($Gtk2::Ex::Clock::VERSION, $want_version, 'VERSION variable');
   is (Gtk2::Ex::Clock->VERSION,  $want_version, 'VERSION class method');
 
@@ -88,10 +88,30 @@ foreach my $method ('second', 'sec', 'hms', 'time', 'datetime', 'iso8601',
 }
 
 #-----------------------------------------------------------------------------
-# timezone / timezone-string aliasing
+# timezone / timezone-string
 
 {
-  my $clock = Gtk2::Ex::Clock->new (timezone_string => 'ABC');
+  my $clock = Gtk2::Ex::Clock->new;
+  is ($clock->get('timezone'), undef,
+      'timezone - default undef');
+  is ($clock->get('timezone-string'), undef,
+      'timezone-string - default undef');
+  SKIP: {
+    eval{Glib->VERSION(1.240);1}
+      or skip 'no Glib::ParamSpec->scalar get_default_value until glib 1.240', 1;
+    my $pspec = $clock->find_property('timezone');
+    is ($pspec->get_default_value, undef,
+        'timezone - pspec get_default_value undef');
+  }
+ SKIP: {
+    eval{Glib->VERSION(1.240);1}
+      or skip 'no Glib::ParamSpec->string default undef until glib 1.240', 1;
+    my $pspec = $clock->find_property('timezone-string');
+    is ($pspec->get_default_value, undef,
+        'timezone-string - pspec get_default_value undef');
+  }
+
+  $clock->set (timezone_string => 'ABC');
   is ($clock->get('timezone'), 'ABC');
   is ($clock->get('timezone-string'), 'ABC');
   is ($clock->get('timezone_string'), 'ABC');

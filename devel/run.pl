@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright 2008, 2009, 2010 Kevin Ryde
+# Copyright 2008, 2009, 2010, 2011 Kevin Ryde
 
 # This file is part of Gtk2-Ex-Clock.
 #
@@ -61,7 +61,7 @@ $toplevel->add ($vbox);
 {
   require DateTime::TimeZone::TAI;
   my $tz = DateTime::TimeZone::TAI->new;
-  my $clock = Gtk2::Ex::Clock->new (format => "DateTime TAI %a %H:%M:%S.%N",
+  my $clock = Gtk2::Ex::Clock->new (format => "DateTime TAI %a %H:%M:%S.%N</span>",
                                     timezone => $tz);
   $clock->signal_connect (notify => sub { print "update ...\n" });
   $vbox->pack_start ($clock, 1,1,0);

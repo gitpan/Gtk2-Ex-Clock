@@ -24,7 +24,7 @@ use Getopt::Long;
 use Gtk2 '-init';
 use Gtk2::Ex::Clock;
 
-our $VERSION = 14;
+our $VERSION = 15;
 
 my ($foreground, $background, $geometry, $use_noshrink);
 my %clock_properties;

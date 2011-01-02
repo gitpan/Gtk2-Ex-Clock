@@ -35,8 +35,8 @@ plan tests => 1;
 {
   my $leaks = Test::Weaken::leaks (sub { return Gtk2::Ex::Clock->new });
   is ($leaks, undef, 'deep garbage collection');
-  if ($leaks && defined &explain) {
-    diag "Test-Weaken ", explain $leaks;
+  if ($leaks) {
+    eval { diag "Test-Weaken ", explain($leaks) }; # explain in Test::More 0.82
   }
 }
 

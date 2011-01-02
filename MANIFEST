@@ -16,6 +16,7 @@ devel/strftime.pl
 devel/tai.pl
 devel/time-mock.pl
 devel/unmapped.pl
+examples/7seg.pl
 examples/builder.pl
 examples/datetime.pl
 examples/gtk2-ex-clock.pl
@@ -35,6 +36,7 @@ README
 SIGNATURE
 t/Clock-DateTime.t
 t/Clock-display.t
+t/Clock-load.t
 t/Clock-weaken.t
 t/Clock.t
 t/MyTestHelpers.pm
